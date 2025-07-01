@@ -1,0 +1,1818 @@
+require("dotenv").config(); // Must be the first line
+console.log("JWT_SECRET from .env in server.js:", process.env.JWT_SECRET); // Debug log
+const express = require("express");
+const connectDB = require("./config/db");
+const cors = require("./config/cors");
+const authRoutes = require("./routes/authRoutes");
+const providerRoutes = require("./routes/providerRoutes");
+const seekerRoutes = require("./routes/seekerRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const errorHandler = require("./middleware/error");
+
+// Initialize Express app
+const app = express();
+
+console.log("Configuring middleware...");
+app.use(cors);
+app.use(express.json());
+
+console.log("Setting up routes...");
+app.use("/api/auth", authRoutes);
+app.use("/provider", providerRoutes);
+app.use("/seeker", seekerRoutes);
+app.use("/admin", adminRoutes);
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 4000;
+
+async function startServer() {
+  await connectDB();
+  app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+}
+startServer().catch((err) => console.error("Server startup error:", err));
+
+
+
+const bcrypt = require("bcryptjs"); // Changed from 'bcrypt' to 'bcryptjs'
+
+
+// Hash a password
+const generatePasswordHash = async (password) => {
+  console.log("Generating password hash for:", password); // Log password being hashed
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash(password, salt);
+  console.log("Generated hash:", hash); // Log resulting hash
+  return hash;
+};
+
+// Verify a password against a hash
+const verifyPassword = async (password, hash) => {
+  console.log("Verifying password against hash"); // Log verification attempt
+  const isMatch = await bcrypt.compare(password, hash);
+  console.log("Password match result:", isMatch); // Log verification result
+  return isMatch;
+};
+
+module.exports = { generatePasswordHash, verifyPassword };
+
+
+const winston = require("winston");
+
+// Configure Winston logger for file and console output
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: "error.log", level: "error" }), // Error logs
+    new winston.transports.File({ filename: "combined.log" }), // All logs
+    new winston.transports.Console(), // Console output
+  ],
+});
+
+module.exports = logger;
+
+
+
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = process.env.JWT_SECRET ;
+console.log("JWT_SECRET from .env:", process.env.JWT_SECRET);
+
+const generateToken = (data, options = { expiresIn: "1h" }) => {
+  console.log("Generating token for data:", data);
+  // console.log("JWT_SECRET value:", SECRET_KEY); // Add this to debug
+  if (!SECRET_KEY) {
+    throw new Error("JWT_SECRET is not defined");
+  }
+  const token = jwt.sign(data, SECRET_KEY, options);
+  console.log("Generated token:", token);
+  return token;
+};
+
+const verifyToken = (token) => {
+  console.log("Verifying token:", token);
+  return jwt.verify(token, SECRET_KEY);
+};
+
+module.exports = { generateToken, verifyToken };
+
+const cors = require("cors");
+
+// Configure CORS with allowed origins and methods
+module.exports = cors({
+  origin: process.env.FRONTEND_URL || ["http://localhost:3000", "http://192.168.0.107:3000"], // Allow frontend origins
+  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+  credentials: true, // Enable credentials (cookies, auth headers)
+});
+
+
+const mongoose = require("mongoose");
+
+const connectDB = async () => {
+  console.log("Attempting to connect to MongoDB..."); // Log connection attempt
+
+  try {
+    // Set the strictQuery option to true or false as needed
+    mongoose.set('strictQuery', true);
+
+    await mongoose.connect(process.env.DB_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("MongoDB connected successfully"); // Log successful connection
+  } catch (error) {
+    console.error("MongoDB connection failed:", error.message); // Log connection error
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
+
+
+const admin = require("firebase-admin");
+const serviceAccount = require("./path-to-your-service-account-key.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: "your-storage-bucket.appspot.com"
+});
+
+const bucket = admin.storage().bucket();
+module.exports = { bucket };
+
+
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+
+// Schema for admins
+const adminSchema = new Schema({
+  credential_id: { type: Schema.Types.ObjectId, ref: "Credential", required: true },
+  first_name: { type: String, required: true },
+  last_name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  mobile_no: { type: String, required: true },
+});
+
+module.exports = mongoose.model("Admin", adminSchema);
+
+
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+
+// Schema for consent records
+const consentSchema = new Schema({
+  item_id: { type: Schema.Types.ObjectId, ref: "DataItem", required: true },
+  seeker_id: { type: Schema.Types.ObjectId, ref: "Seeker", required: true },
+  provider_id: { type: Schema.Types.ObjectId, ref: "Provider", required: true },
+  validity_period: { type: Date, default: () => new Date(8640000000000000) },
+  access_count: { type: Number, default: 1 },
+  status: {
+    type: String,
+    enum: ["pending", "rejected", "approved", "count exhausted", "revoked", "expired"],
+    default: "pending",
+  },
+  encryptedAESKeyForSeeker: { type: String },
+  date_created: { type: Date, default: Date.now },
+  isActive: { type: Boolean, default: true }, // Added to sync with provider status
+});
+
+module.exports = mongoose.model("Consent", consentSchema);
+
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+const { generatePasswordHash } = require("../utils/passwordHash");
+
+// Schema for provider credentials
+const credentialSchema = new Schema({
+  username: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ["provider", "seeker", "admin"], required: true },
+});
+
+// Pre-save hook to hash password only if it's not already hashed
+credentialSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    // Check if password is already a bcrypt hash (starts with $2a$ or $2b$)
+    if (!this.password.startsWith("$2a$") && !this.password.startsWith("$2b$")) {
+      console.log("Hashing password for credential:", this.username);
+      this.password = await generatePasswordHash(this.password);
+      console.log("Password hashed for credential:", this.username);
+    } else {
+      console.log("Password already hashed, skipping hashing for:", this.username);
+    }
+  }
+  next();
+});
+
+module.exports = mongoose.model("Credential", credentialSchema);
+
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+
+// Schema for encrypted data items
+const dataItemSchema = new Schema({
+  item_name: { type: String, required: true },
+  item_owner_id: { type: Schema.Types.ObjectId, ref: "Provider", required: true },
+  item_type: { type: String, enum: ["text", "image", "document"], required: true },
+  encryptedData: { type: Buffer },
+  encryptedUrl: { type: String },
+  encryptedAESKey: { type: String, required: true },
+  iv: { type: String }, // Added for AES-GCM
+  created_at: { type: Date, default: Date.now },
+  isActive: { type: Boolean, default: true },
+});
+
+module.exports = mongoose.model("DataItem", dataItemSchema);
+
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+
+// Schema for providers (individuals)
+const providerSchema = new Schema({
+  credential_id: { type: Schema.Types.ObjectId, ref: "Credential", required: true },
+  first_name: { type: String, required: true },
+  middle_name: String,
+  last_name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  mobile_no: { type: String, required: true },
+  date_of_birth: { type: Date, required: true },
+  age: { type: Number, required: true },
+  publicKey: { type: String, required: true },
+  isActive: { type: Boolean, default: true }, // Added for activation status
+});
+
+module.exports = mongoose.model("Provider", providerSchema);
+
+const mongoose = require("mongoose");
+const { generatePasswordHash } = require("../utils/passwordHash");
+
+// Schema for pending provider signups
+const providerBacklogSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, required: true },
+  first_name: { type: String, required: true },
+  middle_name: String,
+  last_name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  date_of_birth: { type: Date, required: true },
+  mobile_no: { type: String, required: true },
+  age: { type: Number, required: true },
+  publicKey: { type: String, required: true },
+  status: { type: String, enum: ["pending", "rejected", "approved"], default: "pending" },
+  created_at: { type: Date, default: Date.now },
+});
+
+// Add pre-save hook to hash password
+providerBacklogSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    console.log("Hashing password for provider backlog:", this.username);
+    this.password = await generatePasswordHash(this.password);
+    console.log("Password hashed for provider backlog:", this.username);
+  }
+  next();
+});
+
+module.exports = mongoose.model("ProviderBacklog", providerBacklogSchema);
+
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+
+// Schema for seekers
+const seekerSchema = new Schema({
+  credential_id: { type: Schema.Types.ObjectId, ref: "Credential", required: true },
+  name: { type: String, required: true, unique: true },
+  type: { type: String, enum: ["Bank", "Government", "Private Company", "Other"], required: true },
+  registration_no: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  contact_no: { type: String, required: true },
+  address: { type: String, required: true },
+  publicKey: { type: String, required: true },
+  isActive: { type: Boolean, default: true }, // Added for activation status
+});
+
+module.exports = mongoose.model("Seeker", seekerSchema);
+
+
+const mongoose = require("mongoose");
+const { generatePasswordHash } = require("../utils/passwordHash");
+
+const seekerBacklogSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, required: true },
+  name: { type: String, required: true, unique: true },
+  type: { type: String, enum: ["Bank", "Government", "Private Company", "Other"], required: true },
+  registration_no: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  contact_no: { type: String, required: true },
+  address: { type: String, required: true },
+  publicKey: { type: String, required: true },
+  status: { type: String, enum: ["pending", "rejected", "approved"], default: "pending" },
+  created_at: { type: Date, default: Date.now },
+});
+
+// Add pre-save hook to hash password
+seekerBacklogSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    console.log("Hashing password for seeker backlog:", this.username);
+    this.password = await generatePasswordHash(this.password);
+    console.log("Password hashed for seeker backlog:", this.username);
+  }
+  next();
+});
+
+module.exports = mongoose.model("SeekerBacklog", seekerBacklogSchema);
+
+const ProviderBacklog = require("../models/ProviderBacklog");
+const SeekerBacklog = require("../models/SeekerBacklog");
+const Credential = require("../models/Credential");
+const Provider = require("../models/Provider");
+const Seeker = require("../models/Seeker");
+const DataItem = require("../models/DataItem");
+const Consent = require("../models/Consent");
+
+// Get pending provider signup requests
+const getProviderBackLog = async (req, res) => {
+  console.log("Fetching provider backlog for admin:", req.provider.id);
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const pendingBacklogs = await ProviderBacklog.find({ status: "pending" })
+      .sort({ created_at: 1 })
+      .select("-password");
+    console.log("Pending provider backlogs retrieved:", pendingBacklogs.length);
+    res.status(200).json({ data: pendingBacklogs });
+  } catch (error) {
+    console.error("Error fetching provider backlog:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get pending seeker signup requests
+const getSeekerBackLog = async (req, res) => {
+  console.log("Fetching seeker backlog for admin:", req.provider.id);
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const pendingBacklogs = await SeekerBacklog.find({ status: "pending" })
+      .sort({ created_at: 1 })
+      .select("-password");
+    console.log("Pending seeker backlogs retrieved:", pendingBacklogs.length);
+    res.status(200).json({ data: pendingBacklogs });
+  } catch (error) {
+    console.error("Error fetching seeker backlog:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Approve or reject a provider
+const approveProvider = async (req, res) => {
+  console.log("Approve provider request received:", req.body);
+  const { providerId, action } = req.body;
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    console.log("Fetching provider backlog:", providerId);
+    const backlog = await ProviderBacklog.findById(providerId);
+    if (!backlog) {
+      console.log("Provider not found in backlog:", providerId);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    if (action === "approve") {
+      // Create credential without re-hashing the password
+      const credential = new Credential({
+        username: backlog.username,
+        password: backlog.password, // Already hashed from backlog
+        role: "provider",
+      });
+      await credential.save({ validateBeforeSave: false }); // Skip pre-save hook
+
+      await Provider.create({
+        credential_id: credential._id,
+        first_name: backlog.first_name,
+        middle_name: backlog.middle_name,
+        last_name: backlog.last_name,
+        email: backlog.email,
+        mobile_no: backlog.mobile_no,
+        date_of_birth: backlog.date_of_birth,
+        age: backlog.age,
+        publicKey: backlog.publicKey,
+        isActive: true,
+      });
+      backlog.status = "approved";
+      console.log("Provider approved and moved to Provider collection:", providerId);
+    } else if (action === "reject") {
+      backlog.status = "rejected";
+      console.log("Provider rejected:", providerId);
+    }
+    await backlog.save();
+    res.json({ message: `Provider ${action}ed` });
+    console.log("Response sent for provider:", providerId, "Action:", action);
+  } catch (error) {
+    console.error("Error approving provider:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Approve or reject a seeker
+const approveSeeker = async (req, res) => {
+  console.log("Approve seeker request received:", req.body);
+  const { seekerId, action } = req.body;
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    console.log("Fetching seeker backlog:", seekerId);
+    const backlog = await SeekerBacklog.findById(seekerId);
+    if (!backlog) {
+      console.log("Seeker not found in backlog:", seekerId);
+      return res.status(404).json({ message: "Seeker not found" });
+    }
+
+    if (action === "approve") {
+      // Create credential without re-hashing the password
+      const credential = new Credential({
+        username: backlog.username,
+        password: backlog.password, // Already hashed from backlog
+        role: "seeker",
+      });
+      await credential.save({ validateBeforeSave: false }); // Skip pre-save hook
+
+      await Seeker.create({
+        credential_id: credential._id,
+        name: backlog.name,
+        type: backlog.type,
+        registration_no: backlog.registration_no,
+        email: backlog.email,
+        contact_no: backlog.contact_no,
+        address: backlog.address,
+        publicKey: backlog.publicKey,
+        isActive: true,
+      });
+      backlog.status = "approved";
+      console.log("Seeker approved and moved to Seeker collection:", seekerId);
+    } else if (action === "reject") {
+      backlog.status = "rejected";
+      console.log("Seeker rejected:", seekerId);
+    }
+    await backlog.save();
+    res.json({ message: `Seeker ${action}ed` });
+    console.log("Response sent for seeker:", seekerId, "Action:", action);
+  } catch (error) {
+    console.error("Error approving seeker:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Inactivate a provider by userId
+const inactivateProvider = async (req, res) => {
+  console.log("Inactivate provider request received:", req.body);
+  const { userId } = req.body;
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    console.log("Fetching provider by userId:", userId);
+    const provider = await Provider.findById(userId);
+    if (!provider) {
+      console.log("Provider not found:", userId);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    provider.isActive = false;
+    await provider.save();
+    console.log("Provider inactivated:", userId);
+
+    await DataItem.updateMany({ item_owner_id: provider._id }, { isActive: false });
+    console.log("Provider's data items inactivated for:", userId);
+
+    await Consent.updateMany({ provider_id: provider._id }, { isActive: false });
+    console.log("Provider's consents inactivated for:", userId);
+
+    res.json({ message: "Provider and related data inactivated" });
+    console.log("Response sent for provider inactivation:", userId);
+  } catch (error) {
+    console.error("Error inactivating provider:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Inactivate a seeker by userId
+const inactivateSeeker = async (req, res) => {
+  console.log("Inactivate seeker request received:", req.body);
+  const { userId } = req.body;
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    console.log("Fetching seeker by userId:", userId);
+    const seeker = await Seeker.findById(userId);
+    if (!seeker) {
+      console.log("Seeker not found:", userId);
+      return res.status(404).json({ message: "Seeker not found" });
+    }
+
+    seeker.isActive = false;
+    await seeker.save();
+    console.log("Seeker inactivated:", userId);
+
+    res.json({ message: "Seeker inactivated" });
+    console.log("Response sent for seeker inactivation:", userId);
+  } catch (error) {
+    console.error("Error inactivating seeker:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get all inactive users (providers and seekers)
+const getInactiveUsers = async (req, res) => {
+  console.log("Fetching inactive users for admin:", req.provider.id);
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const inactiveProviders = await Provider.find({ isActive: false }).populate("credential_id", "username");
+    const inactiveSeekers = await Seeker.find({ isActive: false }).populate("credential_id", "username");
+
+    const inactiveUsers = [
+      ...inactiveProviders.map(provider => ({
+        _id: provider._id, // Include _id for frontend use
+        username: provider.credential_id.username,
+        role: "provider",
+        email: provider.email,
+        first_name: provider.first_name,
+        last_name: provider.last_name,
+        isActive: provider.isActive,
+      })),
+      ...inactiveSeekers.map(seeker => ({
+        _id: seeker._id, // Include _id for frontend use
+        username: seeker.credential_id.username,
+        role: "seeker",
+        email: seeker.email,
+        name: seeker.name,
+        type: seeker.type,
+        isActive: seeker.isActive,
+      })),
+    ];
+
+    console.log("Inactive users retrieved:", inactiveUsers.length);
+    res.status(200).json({ data: inactiveUsers });
+  } catch (error) {
+    console.error("Error fetching inactive users:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Reactivate a provider or seeker by userId
+const reactivate = async (req, res) => {
+  console.log("Reactivate request received:", req.body);
+  const { userId } = req.body;
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    console.log("Fetching provider/seeker by userId:", userId);
+    const provider = await Provider.findById(userId);
+    const seeker = await Seeker.findById(userId);
+
+    if (provider) {
+      provider.isActive = true;
+      await provider.save();
+      await DataItem.updateMany({ item_owner_id: provider._id }, { isActive: true });
+      await Consent.updateMany({ provider_id: provider._id }, { isActive: true });
+      console.log("Provider reactivated:", userId);
+      res.json({ message: "Provider reactivated" });
+    } else if (seeker) {
+      seeker.isActive = true;
+      await seeker.save();
+      console.log("Seeker reactivated:", userId);
+      res.json({ message: "Seeker reactivated" });
+    } else {
+      console.log("User not found for reactivation:", userId);
+      return res.status(404).json({ message: "Provider/Seeker not found" });
+    }
+    console.log("Response sent for reactivation of:", userId);
+  } catch (error) {
+    console.error("Error reactivating:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get all active providers
+const getProviders = async (req, res) => {
+  console.log("Fetching active providers for admin:", req.provider.id);
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const activeProviders = await Provider.find({ isActive: true })
+      .populate("credential_id", "username")
+      .select("first_name last_name email mobile_no");
+    console.log("Active providers retrieved:", activeProviders.length);
+    res.status(200).json({ data: activeProviders });
+  } catch (error) {
+    console.error("Error fetching active providers:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get all active seekers
+const getSeekers = async (req, res) => {
+  console.log("Fetching active seekers for admin:", req.provider.id);
+  if (req.provider.role !== "admin") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const activeSeekers = await Seeker.find({ isActive: true })
+      .populate("credential_id", "username")
+      .select("name email contact_no type");
+    console.log("Active seekers retrieved:", activeSeekers.length);
+    res.status(200).json({ data: activeSeekers });
+  } catch (error) {
+    console.error("Error fetching active seekers:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {
+  getProviderBackLog,
+  getSeekerBackLog,
+  approveProvider,
+  approveSeeker,
+  inactivateProvider,
+  inactivateSeeker,
+  getInactiveUsers,
+  reactivate,
+  getProviders,
+  getSeekers,
+};
+
+
+const Credential = require("../models/Credential");
+const Provider = require("../models/Provider");
+const Seeker = require("../models/Seeker");
+const Admin = require("../models/Admin");
+const ProviderBacklog = require("../models/ProviderBacklog");
+const SeekerBacklog = require("../models/SeekerBacklog");
+const { generateToken } = require("../utils/jwtToken");
+const { generatePasswordHash, verifyPassword } = require("../utils/passwordHash");
+const { validationResult } = require("express-validator");
+
+// Handle provider signup
+const signup = async (req, res) => {
+  console.log("Signup request received:", req.body);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log("Validation errors:", errors.array());
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { username, password, role, publicKey, ...data } = req.body;
+
+  try {
+    console.log("Checking for existing username:", username);
+    const existingCredential = await Credential.findOne({ username });
+    if (existingCredential) {
+      console.log("Username already exists:", username);
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
+    if (role === "provider") {
+      console.log("Checking for existing email in ProviderBacklog:", data.email);
+      const existingProvider = await ProviderBacklog.findOne({ email: data.email });
+      if (existingProvider) {
+        console.log("Email already exists in backlog:", data.email);
+        return res.status(400).json({ message: "Email already exists" });
+      }
+      await ProviderBacklog.create({ username, password, role, publicKey, ...data }); // Hook hashes password
+      console.log("Provider added to backlog:", username);
+    } else if (role === "seeker") {
+      console.log("Checking for existing email in SeekerBacklog:", data.email);
+      const existingSeeker = await SeekerBacklog.findOne({ email: data.email });
+      if (existingSeeker) {
+        console.log("Email already exists in backlog:", data.email);
+        return res.status(400).json({ message: "Email already exists" });
+      }
+      await SeekerBacklog.create({ username, password, role, publicKey, ...data }); // Hook hashes password
+      console.log("Seeker added to backlog:", username);
+    } else if (role === "admin") {
+      const credential = await Credential.create({ username, password, role }); // Hook hashes password
+      await Admin.create({ credential_id: credential._id, ...data });
+      console.log("Admin created:", username);
+    }
+    res.status(201).json({ message: "Signup successful, awaiting approval if applicable" });
+    console.log("Signup response sent for:", username);
+  } catch (error) {
+    console.error("Signup error:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Handle user login (provider, seeker, or admin)
+const login = async (req, res) => {
+  console.log("Login request received:", req.body);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log("Validation errors:", errors.array());
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { username, password, role } = req.body;
+
+  try {
+    console.log("Checking credentials for:", username, "Role:", role);
+    let credential = await Credential.findOne({ username, role });
+    let isFromBacklog = false;
+
+    if (!credential) {
+      console.log("No credential found, checking backlog for:", username);
+      let backlog;
+      if (role === "provider") {
+        backlog = await ProviderBacklog.findOne({ username });
+      } else if (role === "seeker") {
+        backlog = await SeekerBacklog.findOne({ username });
+      }
+
+      if (backlog) {
+        if (backlog.status === "pending") {
+          console.log("User in backlog, pending approval:", username);
+          return res.status(450).json({ message: "Pending approval" });
+        }
+        if (backlog.status === "rejected") {
+          console.log("User in backlog, rejected:", username);
+          return res.status(450).json({ message: "Rejected" });
+        }
+        // If approved but not in Credential yet (edge case), use backlog credential
+        credential = backlog;
+        isFromBacklog = true;
+      } else {
+        console.log("User not found:", username);
+        return res.status(404).json({ message: "User not found" });
+      }
+    }
+
+    const isMatch = await verifyPassword(password, credential.password);
+    if (!isMatch) {
+      console.log("Password mismatch for:", username);
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
+    let user;
+    if (role === "provider") {
+      user = await Provider.findOne({ credential_id: credential._id });
+    } else if (role === "seeker") {
+      user = await Seeker.findOne({ credential_id: credential._id });
+    } else if (role === "admin") {
+      user = await Admin.findOne({ credential_id: credential._id });
+    }
+
+    // If user is from backlog (not yet approved), skip role-specific check
+    if (!user && !isFromBacklog) {
+      console.log("User not found in role-specific collection:", username);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if ((role === "provider" || role === "seeker") && user && !user.isActive) {
+      console.log("User is inactive:", username);
+      return res.status(403).json({ message: "Account is inactive" });
+    }
+
+    const token = generateToken({ id: credential._id, role });
+    res.json({ message: "Login successful", token, userId: credential._id, role });
+    console.log("Login successful for:", username, "Token:", token);
+  } catch (error) {
+    console.error("Login error:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { signup, login };
+
+
+const Consent = require("../models/Consent");
+const ConsentHistory = require("../models/ConsentHistory");
+const Provider = require("../models/Provider");
+const Seeker = require("../models/Seeker");
+const DataItem = require("../models/DataItem");
+
+// Get consent history for a provider
+const getConsentHistoryByProviderId = async (req, res) => {
+  console.log("Step 1: Fetching consent history for providerId:", req.provider.id);
+  if (req.provider.role !== "provider") { // Updated from "individual" to "provider"
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    // Fetch Provider using credential_id
+    const provider = await Provider.findOne({ credential_id: req.provider.id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const consents = await Consent.find({ provider_id: provider._id })
+      .populate("item_id", "item_name item_type")
+      .populate("seeker_id", "name type email contact_no");
+    console.log("Step 2: Found consents for provider:", consents.length);
+
+    const consentIds = consents.map((consent) => consent._id);
+    console.log("Step 3: Extracted consent IDs:", consentIds);
+
+    const consentHistories = await ConsentHistory.find({ consent_id: { $in: consentIds } }).sort({ timestamp: -1 });
+    console.log("Step 4: Found consent histories:", consentHistories.length);
+
+    const result = await Promise.all(
+      consentHistories.map(async (history) => {
+        const consent = consents.find((c) => c._id.equals(history.consent_id));
+        if (!consent) return null;
+
+        const seeker = consent.seeker_id;
+        let seekerName = "Unknown Seeker";
+        let additionalInfo = history.additional_info || "N/A";
+
+        if (seeker) {
+          seekerName = seeker.name || "Unknown Seeker";
+          additionalInfo = `Name: ${seekerName}, Type: ${seeker.type || "N/A"}, Email: ${seeker.email || "N/A"}, Contact: ${seeker.contact_no || "N/A"}`;
+        }
+
+        return {
+          consent_id: history.consent_id,
+          item_name: consent.item_id.item_name,
+          item_type: consent.item_id.item_type,
+          seeker_name: seekerName,
+          status: history.new_status,
+          requested_at: history.timestamp,
+          additional_info: additionalInfo,
+        };
+      })
+    );
+    console.log("Step 5: Formatted history result:", result.length);
+
+    const filteredResult = result.filter((item) => item !== null);
+    console.log("Step 6: Filtered history result:", filteredResult.length);
+
+    if (filteredResult.length > 0) {
+      console.log("Step 7: Sending success response with history:", filteredResult.length);
+      return res.status(200).send({
+        success: true,
+        data: filteredResult,
+      });
+    } else {
+      console.log("Step 7: No consent history found.");
+      return res.status(404).send({
+        success: false,
+        message: "No consent history found for the given provider.",
+      });
+    }
+  } catch (error) {
+    console.error("Step 8: Error fetching consent history:", error.message);
+    return res.status(500).send({
+      success: false,
+      message: "Could not fetch consent history.",
+    });
+  }
+};
+
+// Get consent history for a seeker
+const getConsentHistoryBySeekerId = async (req, res) => {
+  console.log("Step 1: Fetching consent history for seekerId:", req.provider.id);
+  if (req.provider.role !== "seeker") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    // Fetch Seeker using credential_id
+    const seeker = await Seeker.findOne({ credential_id: req.provider.id });
+    if (!seeker) {
+      console.log("Seeker not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Seeker not found" });
+    }
+
+    const consents = await Consent.find({ seeker_id: seeker._id })
+      .populate("item_id", "item_name item_type")
+      .populate("provider_id", "first_name last_name email mobile_no");
+    console.log("Step 2: Found consents for seeker:", consents.length);
+
+    const consentIds = consents.map((consent) => consent._id);
+    console.log("Step 3: Extracted consent IDs:", consentIds);
+
+    const consentHistories = await ConsentHistory.find({ consent_id: { $in: consentIds } }).sort({ timestamp: -1 });
+    console.log("Step 4: Found consent histories:", consentHistories.length);
+
+    const result = await Promise.all(
+      consentHistories.map(async (history) => {
+        const consent = consents.find((c) => c._id.equals(history.consent_id));
+        if (!consent) return null;
+
+        const provider = consent.provider_id;
+        let providerName = "Unknown Provider";
+        let additionalInfo = "N/A";
+
+        if (provider) {
+          providerName = provider.first_name
+            ? `${provider.first_name} ${provider.last_name || ""}`.trim()
+            : "Unknown Provider";
+          additionalInfo = `Name: ${providerName}, Email: ${provider.email || "N/A"}, Contact: ${provider.mobile_no || "N/A"}`;
+        }
+
+        return {
+          consent_id: history.consent_id,
+          item_name: consent.item_id.item_name,
+          item_type: consent.item_id.item_type,
+          provider_name: providerName,
+          status: history.new_status,
+          requested_at: history.timestamp,
+          additional_info: additionalInfo,
+        };
+      })
+    );
+    console.log("Step 5: Formatted history result:", result.length);
+
+    const filteredResult = result.filter((item) => item !== null);
+    console.log("Step 6: Filtered history result:", filteredResult.length);
+
+    if (filteredResult.length > 0) {
+      console.log("Step 7: Sending success response with history:", filteredResult.length);
+      return res.status(200).send({
+        success: true,
+        data: filteredResult,
+      });
+    } else {
+      console.log("Step 7: No consent history found.");
+      return res.status(404).send({
+        success: false,
+        message: "No consent history found for the given seeker.",
+      });
+    }
+  } catch (error) {
+    console.error("Step 8: Error fetching consent history:", error.message);
+    return res.status(500).send({
+      success: false,
+      message: "Could not fetch consent history.",
+    });
+  }
+};
+
+module.exports = { getConsentHistoryByProviderId, getConsentHistoryBySeekerId };
+
+
+const express = require("express");
+const {
+  getProviderBackLog,
+  getSeekerBackLog,
+  approveProvider,
+  approveSeeker,
+  inactivateProvider,
+  inactivateSeeker,
+  getInactiveUsers,
+  reactivate,
+  getProviders,  // New
+  getSeekers,    // New
+} = require("../controllers/adminController");
+const auth = require("../middleware/auth");
+const router = express.Router();
+
+// Fetches a list of pending provider signup requests for admin review
+router.get("/getProviderBackLog", auth, getProviderBackLog);
+
+// Fetches a list of pending seeker signup requests for admin review
+router.get("/getSeekerBackLog", auth, getSeekerBackLog);
+
+// Approves or rejects a provider signup request, moving approved providers to the Provider table
+router.post("/approval/provider", auth, approveProvider);
+
+// Approves or rejects a seeker signup request, moving approved seekers to the Seeker table
+router.post("/approval/seeker", auth, approveSeeker);
+
+// Inactivates a provider and their associated data items and consents by userId
+router.post("/inactivateProvider", auth, inactivateProvider);
+
+// Inactivates a seeker by userId, preventing login and access
+router.post("/inactivateSeeker", auth, inactivateSeeker);
+
+// Fetches a list of all inactive users (providers and seekers) for admin review
+router.get("/getInactiveUsers", auth, getInactiveUsers);
+
+// Reactivates a provider or seeker by userId, restoring access
+router.post("/reactivate", auth, reactivate);
+
+// Fetches all active providers
+router.get("/getProviders", auth, getProviders);
+
+// Fetches all active seekers
+router.get("/getSeekers", auth, getSeekers);
+
+module.exports = router;
+
+
+const express = require("express");
+const { signup, login } = require("../controllers/authController");
+const { check } = require("express-validator");
+const router = express.Router();
+
+// Handles new provider/seeker/admin signup, validates input, and adds to backlog if applicable
+router.post("/signup", [
+  check("username").notEmpty().withMessage("Username is required"),
+  check("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+  check("role").isIn(["provider", "seeker", "admin"]).withMessage("Invalid role"),
+  check("publicKey").if((value, { req }) => req.body.role !== "admin").notEmpty().withMessage("Public key is required"),
+], signup);
+
+// Authenticates provider/seeker/admin login, checks credentials, and returns JWT token if valid
+router.post("/login", [
+  check("username").notEmpty().withMessage("Username is required"),
+  check("password").notEmpty().withMessage("Password is required"),
+  check("role").isIn(["provider", "seeker", "admin"]).withMessage("Invalid role"),
+], login);
+
+module.exports = router;
+
+
+
+const express = require("express");
+const { addItem, getItems, getConsentList, giveConsent, getUserData, editItem, deleteItem } = require("../controllers/dataController");
+const { getConsentHistoryByProviderId } = require("../controllers/historyController");
+const auth = require("../middleware/auth");
+const router = express.Router();
+
+// Adds a new encrypted data item (text or cloud URL) for the provider
+router.post("/:providerId/addItems", auth, addItem);
+
+// Retrieves all active data items owned by the provider
+router.get("/:providerId/getItems", auth, getItems);
+
+// Fetches a list of pending consent requests from seekers for the provider's data
+router.get("/:providerId/getConsentList", auth, getConsentList);
+
+// Allows the provider to approve or revoke a seeker's consent request
+router.post("/giveConsent", auth, giveConsent);
+
+// Returns the consent history for all actions related to the provider's data
+router.get("/:providerId/getConsentHistory", auth, getConsentHistoryByProviderId);
+
+// Fetch provider's user data
+router.get("/:providerId/getUserData", auth, getUserData);
+
+// Edit an existing data item
+router.put("/:providerId/editItem", auth, editItem);
+
+// Delete an existing data item
+router.delete("/:providerId/deleteItem", auth, deleteItem);
+
+module.exports = router;
+
+
+
+const express = require("express");
+const { accessItem, getProviderItems, requestAccessAgain, getSeekerData } = require("../controllers/dataController"); // Add getSeekerData
+const { getConsentHistoryBySeekerId } = require("../controllers/historyController");
+const auth = require("../middleware/auth");
+const router = express.Router();
+
+// Routes for seeker actions
+router.get("/providerItems", auth, getProviderItems); // Fetch provider items by username
+router.post("/:seeker/accessItem", auth, accessItem); // Access an item and check consent
+router.post("/:seeker/requestAccessAgain", auth, requestAccessAgain); // Re-request access for rejected/revoked/expired/count exhausted
+router.get("/:seekerId/getConsentHistory", auth, getConsentHistoryBySeekerId); // Get consent history for seeker
+router.get("/:seekerId/getSeekerData", auth, getSeekerData); // New route to fetch seeker data
+
+module.exports = router;
+
+
+const DataItem = require("../models/DataItem");
+const Consent = require("../models/Consent");
+const ConsentHistory = require("../models/ConsentHistory");
+const Provider = require("../models/Provider");
+const Seeker = require("../models/Seeker");
+const Credential = require("../models/Credential");
+const { v4: uuidv4 } = require("uuid");
+
+// Add a new data item
+const addItem = async (req, res) => {
+  console.log("Add item request received:", req.body);
+  const { item_name, item_type, encryptedData, encryptedAESKey, iv } = req.body;
+  if (req.provider.role !== "provider") {
+    console.log("Unauthorized attempt to add item by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const provider = await Provider.findOne({ credential_id: req.provider.id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const dataItem = new DataItem({
+      item_name,
+      item_type,
+      item_owner_id: provider._id,
+      encryptedData: item_type === "text" ? Buffer.from(encryptedData, "base64") : null,
+      encryptedUrl: item_type !== "text" ? encryptedAESKey : null,
+      encryptedAESKey,
+      iv,
+    });
+    await dataItem.save();
+    console.log("Data item added:", dataItem._id, "for provider:", provider._id);
+    res.status(201).json({ message: "Item added", itemId: dataItem._id });
+  } catch (error) {
+    console.error("Error adding item:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get all items for a provider
+const getItems = async (req, res) => {
+  console.log("Get items request for provider:", req.provider.id);
+  if (req.provider.role !== "provider") {
+    console.log("Unauthorized attempt to get items by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const provider = await Provider.findOne({ credential_id: req.provider.id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const items = await DataItem.find({ item_owner_id: provider._id, isActive: true });
+    console.log("Items retrieved:", items.length);
+    res.json(
+      items.map((item) => ({
+        itemId: item._id,
+        item_name: item.item_name,
+        item_type: item.item_type,
+        encryptedData: item.encryptedData?.toString("base64"),
+        encryptedUrl: item.encryptedUrl,
+        encryptedAESKey: item.encryptedAESKey,
+        iv: item.iv,
+      }))
+    );
+  } catch (error) {
+    console.error("Error getting items:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get pending consent requests for a provider
+const getConsentList = async (req, res) => {
+  console.log("Get consent list request for provider:", req.provider.id);
+  if (req.provider.role !== "provider") {
+    console.log("Unauthorized attempt to get consent list by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const provider = await Provider.findOne({ credential_id: req.provider.id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const consents = await Consent.find({ provider_id: provider._id, status: "pending", isActive: true })
+      .populate("item_id", "item_name")
+      .populate("seeker_id", "name email publicKey");
+    console.log("Pending consents retrieved:", consents.length);
+
+    const formattedConsents = consents.map((consent) => ({
+      consent_id: consent._id,
+      item_name: consent.item_id?.item_name,
+      seeker_name: consent.seeker_id?.name,
+      seeker_email: consent.seeker_id?.email,
+      seeker_publicKey: consent.seeker_id?.publicKey,
+      status: consent.status,
+      date_created: consent.date_created,
+    }));
+
+    res.json(formattedConsents);
+    console.log("Consent list sent for provider:", provider._id);
+  } catch (error) {
+    console.error("Error getting consent list:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Approve or revoke consent
+const giveConsent = async (req, res) => {
+  console.log("Give consent request received:", req.body);
+  const { consent_id, consent, count, validity, encryptedAESKeyForSeeker } = req.body;
+  if (req.provider.role !== "provider") {
+    console.log("Unauthorized attempt to give consent by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const provider = await Provider.findOne({ credential_id: req.provider.id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    console.log("Fetching consent:", consent_id);
+    const consentRequest = await Consent.findById(consent_id)
+      .populate("seeker_id", "publicKey")
+      .populate("item_id", "encryptedAESKey iv");
+    if (!consentRequest || consentRequest.provider_id.toString() !== provider._id.toString() || !consentRequest.isActive) {
+      console.log("Consent not found, not owned, or inactive:", consent_id, provider._id);
+      return res.status(404).json({ message: "Consent request not found or inactive" });
+    }
+
+    const previousStatus = consentRequest.status;
+    consentRequest.status = consent === "yes" ? "approved" : consent === "revoke" ? "revoked" : "rejected";
+
+    if (consent === "yes") {
+      consentRequest.access_count = count || 1;
+      consentRequest.validity_period = validity ? new Date(validity) : consentRequest.validity_period;
+      if (encryptedAESKeyForSeeker) {
+        consentRequest.encryptedAESKeyForSeeker = encryptedAESKeyForSeeker;
+        console.log("Consent approved with key:", encryptedAESKeyForSeeker);
+      }
+    }
+
+    await consentRequest.save();
+    console.log("Consent updated:", consentRequest);
+
+    await ConsentHistory.create({
+      history_id: uuidv4(),
+      consent_id: consentRequest._id,
+      changed_by: provider._id,
+      previous_status: previousStatus,
+      new_status: consentRequest.status,
+      action_type: consent === "yes" ? "approve" : consent === "revoke" ? "revoke" : "reject",
+      remarks: `Action: ${consent}`,
+      additional_info: `Count: ${count || "N/A"}, Validity: ${validity || "N/A"}`,
+    });
+    console.log("Consent history logged for:", consent_id);
+
+    if (consent === "yes" && !encryptedAESKeyForSeeker) {
+      res.json({
+        message: `Consent ${consentRequest.status}`,
+        consentRequest: {
+          _id: consentRequest._id,
+          seekerPublicKey: consentRequest.seeker_id.publicKey,
+          originalEncryptedAESKey: consentRequest.item_id.encryptedAESKey,
+          iv: consentRequest.item_id.iv,
+        },
+      });
+    } else {
+      res.json({ message: `Consent ${consentRequest.status}`, consentRequest });
+    }
+    console.log("Consent response sent:", consentRequest.status);
+  } catch (error) {
+    console.error("Error giving consent:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Fetch provider's user data
+const getUserData = async (req, res) => {
+  console.log("Get user data request for provider:", req.provider.id);
+  if (req.provider.role !== "provider") {
+    console.log("Unauthorized attempt to get user data by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const provider = await Provider.findOne({ credential_id: req.provider.id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    res.json({
+      first_name: provider.first_name,
+      middle_name: provider.middle_name || "",
+      last_name: provider.last_name,
+      email: provider.email,
+      mobile_no: provider.mobile_no,
+      date_of_birth: provider.date_of_birth,
+      age: provider.age,
+      publicKey: provider.publicKey,
+    });
+    console.log("User data sent for provider:", provider._id);
+  } catch (error) {
+    console.error("Error fetching user data:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Edit an existing data item
+const editItem = async (req, res) => {
+  console.log("Edit item request received:", req.body);
+  const { itemId, item_name, item_type, encryptedData, encryptedAESKey, iv } = req.body;
+  if (req.provider.role !== "provider") {
+    console.log("Unauthorized attempt to edit item by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const provider = await Provider.findOne({ credential_id: req.provider.id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const dataItem = await DataItem.findById(itemId);
+    if (!dataItem || dataItem.item_owner_id.toString() !== provider._id.toString() || !dataItem.isActive) {
+      console.log("Item not found, not owned, or inactive:", itemId);
+      return res.status(404).json({ message: "Item not found or inactive" });
+    }
+
+    dataItem.item_name = item_name || dataItem.item_name;
+    dataItem.item_type = item_type || dataItem.item_type;
+    if (item_type === "text" || dataItem.item_type === "text") {
+      dataItem.encryptedData = encryptedData ? Buffer.from(encryptedData, "base64") : dataItem.encryptedData;
+      dataItem.encryptedUrl = null;
+    } else {
+      dataItem.encryptedUrl = encryptedAESKey || dataItem.encryptedUrl;
+      dataItem.encryptedData = null;
+    }
+    dataItem.encryptedAESKey = encryptedAESKey || dataItem.encryptedAESKey;
+    dataItem.iv = iv || dataItem.iv;
+
+    await dataItem.save();
+    console.log("Data item updated:", dataItem._id);
+    res.status(200).json({ message: "Item updated", itemId: dataItem._id });
+  } catch (error) {
+    console.error("Error editing item:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete an existing data item
+const deleteItem = async (req, res) => {
+  console.log("Delete item request received:", req.body);
+  const { itemId } = req.body;
+  if (req.provider.role !== "provider") {
+    console.log("Unauthorized attempt to delete item by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const provider = await Provider.findOne({ credential_id: req.provider.id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const dataItem = await DataItem.findById(itemId);
+    if (!dataItem || dataItem.item_owner_id.toString() !== provider._id.toString()) {
+      console.log("Item not found or not owned:", itemId);
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    dataItem.isActive = false;
+    await dataItem.save();
+    console.log("Data item marked inactive:", dataItem._id);
+
+    await Consent.updateMany({ item_id: dataItem._id }, { isActive: false });
+    console.log("Related consents marked inactive for item:", dataItem._id);
+
+    res.status(200).json({ message: "Item deleted" });
+  } catch (error) {
+    console.error("Error deleting item:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get provider items by username for seeker
+const getProviderItems = async (req, res) => {
+  console.log("Get provider items request received:", req.query);
+  if (req.provider.role !== "seeker") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  const { username } = req.query;
+  if (!username) {
+    console.log("No username provided in query");
+    return res.status(400).json({ message: "Provider username is required" });
+  }
+
+  try {
+    const credential = await Credential.findOne({ username, role: "provider" });
+    if (!credential) {
+      console.log("Credential not found for username:", username);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const provider = await Provider.findOne({ credential_id: credential._id });
+    if (!provider) {
+      console.log("Provider not found for credential_id:", credential._id);
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    const dataItems = await DataItem.find({ item_owner_id: provider._id, isActive: true });
+    console.log("Provider items retrieved:", dataItems.length);
+
+    const itemsMetadata = dataItems.map((item) => ({
+      itemId: item._id,
+      item_name: item.item_name,
+      item_type: item.item_type,
+    }));
+
+    res.json({
+      provider: {
+        username: credential.username,
+        firstname: provider.first_name,
+        lastname: provider.last_name,
+        email: provider.email,
+        mobile: provider.mobile_no,
+      },
+      items: itemsMetadata,
+    });
+    console.log("Provider data sent:", { username, itemsCount: itemsMetadata.length });
+  } catch (error) {
+    console.error("Error fetching provider items:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Access a data item with consent handling
+const accessItem = async (req, res) => {
+  console.log("Access item request received:", req.body);
+  const { item_id } = req.body;
+  if (req.provider.role !== "seeker") {
+    console.log("Unauthorized attempt to access item by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const seeker = await Seeker.findOne({ credential_id: req.provider.id });
+    if (!seeker || !seeker.isActive) {
+      console.log("Seeker not found or inactive for credential_id:", req.provider.id);
+      return res.status(403).json({ message: "Seeker inactive or not found" });
+    }
+
+    console.log("Fetching data item:", item_id);
+    const dataItem = await DataItem.findById(item_id);
+    if (!dataItem || !dataItem.isActive) {
+      console.log("Data item not found or inactive:", item_id);
+      return res.status(404).json({ message: "Item not found or inactive" });
+    }
+
+    console.log("Checking consent for item:", item_id, "Seeker:", seeker._id);
+    let consent = await Consent.findOne({
+      item_id,
+      seeker_id: seeker._id,
+      provider_id: dataItem.item_owner_id,
+    });
+
+    const response = { item_name: dataItem.item_name, item_type: dataItem.item_type };
+
+    const formatDate = (date) => {
+      const d = new Date(date);
+      return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+    };
+
+    if (!consent) {
+      consent = await Consent.create({
+        item_id,
+        seeker_id: seeker._id,
+        provider_id: dataItem.item_owner_id,
+        access_count: 1,
+        status: "pending",
+      });
+      await ConsentHistory.create({
+        history_id: uuidv4(),
+        consent_id: consent._id,
+        changed_by: seeker._id,
+        previous_status: null,
+        new_status: "pending",
+        action_type: "request",
+        remarks: "New consent request",
+      });
+      console.log("New consent request created:", consent._id);
+      return res.status(202).json({
+        message: "Access request sent",
+        consent_status: "pending",
+        ...response,
+      });
+    }
+
+    const previousStatus = consent.status;
+
+    switch (consent.status) {
+      case "pending":
+        console.log("Consent already pending:", consent._id);
+        return res.status(202).json({
+          message: "Request already pending",
+          consent_status: "pending",
+          ...response,
+        });
+
+      case "rejected":
+        console.log("Consent rejected:", consent._id);
+        return res.status(403).json({
+          message: "Request was rejected previously by user",
+          consent_status: "rejected",
+          ...response,
+        });
+
+      case "revoked":
+        console.log("Consent revoked:", consent._id);
+        return res.status(403).json({
+          message: "Request was revoked by user",
+          consent_status: "revoked",
+          ...response,
+        });
+
+      case "approved":
+        if (new Date() > consent.validity_period) {
+          consent.status = "expired";
+          await consent.save();
+          await ConsentHistory.create({
+            history_id: uuidv4(),
+            consent_id: consent._id,
+            changed_by: "system",
+            previous_status: previousStatus,
+            new_status: "expired",
+            action_type: "expire",
+            remarks: "Validity expired",
+          });
+          console.log("Consent expired:", consent._id);
+          return res.status(403).json({
+            message: "Validity expired",
+            consent_status: "expired",
+            ...response,
+          });
+        }
+
+        if (consent.access_count <= 0) {
+          consent.status = "count exhausted";
+          await consent.save();
+          await ConsentHistory.create({
+            history_id: uuidv4(),
+            consent_id: consent._id,
+            changed_by: "system",
+            previous_status: previousStatus,
+            new_status: "count exhausted",
+            action_type: "expire",
+            remarks: "Access count exhausted",
+          });
+          console.log("Access count exhausted:", consent._id);
+          return res.status(403).json({
+            message: "Access count exhausted",
+            consent_status: "count exhausted",
+            ...response,
+          });
+        }
+
+        // Grant access before decrementing
+        const currentAccessCount = consent.access_count;
+        const encryptedDataResponse = {
+          message: "Access granted",
+          consent_status: "approved",
+          encryptedData: dataItem.encryptedData?.toString("base64"),
+          encryptedUrl: dataItem.encryptedUrl,
+          encryptedAESKeyForSeeker: consent.encryptedAESKeyForSeeker,
+          iv: dataItem.iv,
+          access_count: currentAccessCount - 1, // Show remaining after this access
+          validity_period: formatDate(consent.validity_period),
+          ...response,
+        };
+
+        // Decrement access count after preparing response
+        consent.access_count -= 1;
+        if (consent.access_count === 0) {
+          consent.status = "count exhausted";
+        }
+        await consent.save();
+        console.log("Consent updated after access:", consent);
+
+        await ConsentHistory.create({
+          history_id: uuidv4(),
+          consent_id: consent._id,
+          changed_by: seeker._id,
+          previous_status: previousStatus,
+          new_status: consent.status,
+          action_type: "access",
+          remarks: "Item accessed",
+          additional_info: `Remaining Count: ${consent.access_count}`,
+        });
+        console.log("Access logged for consent:", consent._id);
+
+        console.log("Returning encrypted data:", encryptedDataResponse);
+        return res.json(encryptedDataResponse);
+
+      case "expired":
+        console.log("Consent expired:", consent._id);
+        return res.status(403).json({
+          message: "Validity expired",
+          consent_status: "expired",
+          ...response,
+        });
+
+      case "count exhausted":
+        console.log("Consent count exhausted:", consent._id);
+        return res.status(403).json({
+          message: "Access count exhausted",
+          consent_status: "count exhausted",
+          ...response,
+        });
+
+      default:
+        console.log("Unknown consent status:", consent.status);
+        return res.status(500).json({ message: "Unknown consent status" });
+    }
+  } catch (error) {
+    console.error("Error accessing item:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Request access again
+const requestAccessAgain = async (req, res) => {
+  console.log("Request access again received:", req.body);
+  const { item_id } = req.body;
+  if (req.provider.role !== "seeker") {
+    console.log("Unauthorized attempt by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const seeker = await Seeker.findOne({ credential_id: req.provider.id });
+    if (!seeker || !seeker.isActive) {
+      console.log("Seeker not found or inactive for credential_id:", req.provider.id);
+      return res.status(403).json({ message: "Seeker inactive or not found" });
+    }
+
+    const dataItem = await DataItem.findById(item_id);
+    if (!dataItem || !dataItem.isActive) {
+      console.log("Data item not found or inactive:", item_id);
+      return res.status(404).json({ message: "Item not found or inactive" });
+    }
+
+    let consent = await Consent.findOne({
+      item_id,
+      seeker_id: seeker._id,
+      provider_id: dataItem.item_owner_id,
+    });
+
+    if (!consent || !["rejected", "revoked", "expired", "count exhausted"].includes(consent.status)) {
+      console.log("No valid consent to re-request:", consent ? consent.status : "none");
+      return res.status(400).json({ message: "No valid consent to re-request" });
+    }
+
+    const previousStatus = consent.status;
+    consent.status = "pending";
+    consent.access_count = 1;
+    consent.validity_period = new Date(8640000000000000);
+    await consent.save();
+
+    await ConsentHistory.create({
+      history_id: uuidv4(),
+      consent_id: consent._id,
+      changed_by: seeker._id,
+      previous_status: previousStatus,
+      new_status: "pending",
+      action_type: "request",
+      remarks: "Re-requested access",
+    });
+
+    console.log("Consent re-requested:", consent._id);
+    res.status(202).json({
+      message: "Permission request sent",
+      consent_status: "pending",
+      item_name: dataItem.item_name,
+      item_type: dataItem.item_type,
+    });
+  } catch (error) {
+    console.error("Error re-requesting access:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Fetch seeker's user data (limited fields)
+const getSeekerData = async (req, res) => {
+  console.log("Get seeker data request for seeker:", req.provider.id);
+  if (req.provider.role !== "seeker") {
+    console.log("Unauthorized attempt to get seeker data by:", req.provider.id);
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const seeker = await Seeker.findOne({ credential_id: req.provider.id });
+    if (!seeker) {
+      console.log("Seeker not found for credential_id:", req.provider.id);
+      return res.status(404).json({ message: "Seeker not found" });
+    }
+
+    res.json({
+      name: seeker.name,
+      type: seeker.type,
+      registration_no: seeker.registration_no,
+      email: seeker.email,
+      contact_no: seeker.contact_no,
+      address: seeker.address,
+    });
+    console.log("Seeker data sent for seeker:", seeker._id);
+  } catch (error) {
+    console.error("Error fetching seeker data:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  addItem,
+  getItems,
+  getConsentList,
+  giveConsent,
+  getUserData,
+  editItem,
+  deleteItem,
+  accessItem,
+  getProviderItems,
+  requestAccessAgain,
+  getSeekerData,
+};
+
+
+
+
+
+
+
+
+
+
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDln21fUeSPlkx1hujLwXKjQQX70ZDt3WI",
+  authDomain: "consentmanager-7deb8.firebaseapp.com",
+  projectId: "consentmanager-7deb8",
+  storageBucket: "consentmanager-7deb8.firebasestorage.app",
+  messagingSenderId: "433447487718",
+  appId: "1:433447487718:web:cd7b3ca28854f6b5679327",
+  measurementId: "G-2QMJZ7H4DD"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDln21fUeSPlkx1hujLwXKjQQX70ZDt3WI",
+    authDomain: "consentmanager-7deb8.firebaseapp.com",
+    projectId: "consentmanager-7deb8",
+    storageBucket: "consentmanager-7deb8.firebasestorage.app",
+    messagingSenderId: "433447487718",
+    appId: "1:433447487718:web:cd7b3ca28854f6b5679327",
+    measurementId: "G-2QMJZ7H4DD"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
