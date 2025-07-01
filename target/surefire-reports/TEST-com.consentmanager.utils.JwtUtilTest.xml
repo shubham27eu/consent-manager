@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.consentmanager.utils.JwtUtilTest" time="1.081" tests="14" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/app/target/test-classes:/app/target/classes:/home/jules/.m2/repository/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar:/home/jules/.m2/repository/com/sparkjava/spark-core/2.9.4/spark-core-2.9.4.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-server/9.4.48.v20220622/jetty-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-http/9.4.48.v20220622/jetty-http-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util/9.4.48.v20220622/jetty-util-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-io/9.4.48.v20220622/jetty-io-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-webapp/9.4.48.v20220622/jetty-webapp-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-xml/9.4.48.v20220622/jetty-xml-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.48.v20220622/jetty-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-security/9.4.48.v20220622/jetty-security-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.48.v20220622/jetty-util-ajax-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-server/9.4.48.v20220622/websocket-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-common/9.4.48.v20220622/websocket-common-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-client/9.4.48.v20220622/websocket-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-client/9.4.48.v20220622/jetty-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-servlet/9.4.48.v20220622/websocket-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-api/9.4.48.v20220622/websocket-api-9.4.48.v20220622.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy/1.14.9/byte-buddy-1.14.9.jar:/home/jules/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.0/jackson-datatype-jsr310-2.17.0.jar:/home/jules/.m2/repository/com/auth0/java-jwt/4.4.0/java-jwt-4.4.0.jar:/home/jules/.m2/repository/org/mindrot/jbcrypt/0.4/jbcrypt-0.4.jar:/home/jules/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/home/jules/.m2/repository/ch/qos/logback/logback-classic/1.5.3/logback-classic-1.5.3.jar:/home/jules/.m2/repository/ch/qos/logback/logback-core/1.5.3/logback-core-1.5.3.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/home/jules/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/home/jules/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/home/jules/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/home/jules/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/jules/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:"/>
+    <property name="java.vm.vendor" value="Ubuntu"/>
+    <property name="JWT_SECRET_KEY" value="test-secret-key-that-is-definitely-long-enough-for-testing-this"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://ubuntu.com/"/>
+    <property name="user.timezone" value="Etc/UTC"/>
+    <property name="os.name" value="Linux"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-21-openjdk-amd64/lib"/>
+    <property name="sun.java.command" value="/app/target/surefire/surefirebooter-20250701164626034_3.jar /app/target/surefire 2025-07-01T16-46-25_927-jvmRun1 surefire-20250701164626034_1tmp surefire_0-20250701164626034_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/app/target/test-classes:/app/target/classes:/home/jules/.m2/repository/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar:/home/jules/.m2/repository/com/sparkjava/spark-core/2.9.4/spark-core-2.9.4.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-server/9.4.48.v20220622/jetty-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-http/9.4.48.v20220622/jetty-http-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util/9.4.48.v20220622/jetty-util-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-io/9.4.48.v20220622/jetty-io-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-webapp/9.4.48.v20220622/jetty-webapp-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-xml/9.4.48.v20220622/jetty-xml-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.48.v20220622/jetty-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-security/9.4.48.v20220622/jetty-security-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.48.v20220622/jetty-util-ajax-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-server/9.4.48.v20220622/websocket-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-common/9.4.48.v20220622/websocket-common-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-client/9.4.48.v20220622/websocket-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-client/9.4.48.v20220622/jetty-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-servlet/9.4.48.v20220622/websocket-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-api/9.4.48.v20220622/websocket-api-9.4.48.v20220622.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy/1.14.9/byte-buddy-1.14.9.jar:/home/jules/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.0/jackson-datatype-jsr310-2.17.0.jar:/home/jules/.m2/repository/com/auth0/java-jwt/4.4.0/java-jwt-4.4.0.jar:/home/jules/.m2/repository/org/mindrot/jbcrypt/0.4/jbcrypt-0.4.jar:/home/jules/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/home/jules/.m2/repository/ch/qos/logback/logback-classic/1.5.3/logback-classic-1.5.3.jar:/home/jules/.m2/repository/ch/qos/logback/logback-core/1.5.3/logback-core-1.5.3.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/home/jules/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/home/jules/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/home/jules/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/home/jules/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/jules/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/home/jules"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-04-15"/>
+    <property name="java.home" value="/usr/lib/jvm/java-21-openjdk-amd64"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/app"/>
+    <property name="java.vm.compressedOopsMode" value="32-bit"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="/app/target/surefire/surefirebooter-20250701164626034_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="21.0.7+6-Ubuntu-0ubuntu124.04"/>
+    <property name="user.name" value="jules"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="6.8.0"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/home/jules/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://bugs.launchpad.net/ubuntu/+source/openjdk-21"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="java.version" value="21.0.7"/>
+    <property name="user.dir" value="/app"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/usr/java/packages/lib:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Ubuntu"/>
+    <property name="java.vm.version" value="21.0.7+6-Ubuntu-0ubuntu124.04"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="testVerifyToken_emptyToken_returnsEmpty" classname="com.consentmanager.utils.JwtUtilTest" time="0.048">
+    <system-out><![CDATA[2025-07-01 16:46:27.568 [main] INFO  c.consentmanager.utils.JwtUtilTest - Attempted to set JWT_SECRET_KEY system property to: test-secret-key-that-is-definitely-long-enough-for-testing-this
+2025-07-01 16:46:27.615 [main] INFO  c.consentmanager.utils.JwtUtilTest - JwtUtilTest will run with the secret key JwtUtil has initialized with (either from ENV or fallback).
+2025-07-01 16:46:27.656 [main] WARN  com.consentmanager.utils.JwtUtil - Attempted to verify a null or empty JWT.
+]]></system-out>
+  </testcase>
+  <testcase name="testGetRole_fromDecodedJWT" classname="com.consentmanager.utils.JwtUtilTest" time="0.446">
+    <system-out><![CDATA[2025-07-01 16:46:28.072 [main] DEBUG com.consentmanager.utils.JwtUtil - JWT generated successfully for credential ID: 88
+2025-07-01 16:46:28.122 [main] DEBUG com.consentmanager.utils.JwtUtil - JWT verified successfully for subject: 88
+]]></system-out>
+  </testcase>
+  <testcase name="testGenerateToken_success" classname="com.consentmanager.utils.JwtUtilTest" time="0.004">
+    <system-out><![CDATA[2025-07-01 16:46:28.128 [main] DEBUG com.consentmanager.utils.JwtUtil - JWT generated successfully for credential ID: 1
+2025-07-01 16:46:28.129 [main] DEBUG c.consentmanager.utils.JwtUtilTest - Generated token for test: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb20uY29uc2VudG1hbmFnZXIiLCJzdWIiOiIxIiwiY3JlZGVudGlhbElkIjoxLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTEzODgzODgsImV4cCI6MTc1MTQ3NDc4OH0.890GpxYALJzA219ZjEST75anPSMpQmWNan7ldBV2hK4
+]]></system-out>
+  </testcase>
+  <testcase name="testGenerateToken_emptyRole_returnsNull" classname="com.consentmanager.utils.JwtUtilTest" time="0.002">
+    <system-out><![CDATA[2025-07-01 16:46:28.132 [main] WARN  com.consentmanager.utils.JwtUtil - Attempted to generate JWT with null or empty credentialId/role.
+]]></system-out>
+  </testcase>
+  <testcase name="testVerifyToken_nullToken_returnsEmpty" classname="com.consentmanager.utils.JwtUtilTest" time="0.002">
+    <system-out><![CDATA[2025-07-01 16:46:28.134 [main] WARN  com.consentmanager.utils.JwtUtil - Attempted to verify a null or empty JWT.
+]]></system-out>
+  </testcase>
+  <testcase name="testVerifyToken_malformedToken_returnsEmpty" classname="com.consentmanager.utils.JwtUtilTest" time="0.002">
+    <system-out><![CDATA[2025-07-01 16:46:28.136 [main] WARN  com.consentmanager.utils.JwtUtil - JWT verification failed: The token was expected to have 3 parts, but got > 3.
+]]></system-out>
+  </testcase>
+  <testcase name="testGenerateToken_nullCredentialId_returnsNull" classname="com.consentmanager.utils.JwtUtilTest" time="0.001">
+    <system-out><![CDATA[2025-07-01 16:46:28.138 [main] WARN  com.consentmanager.utils.JwtUtil - Attempted to generate JWT with null or empty credentialId/role.
+]]></system-out>
+  </testcase>
+  <testcase name="testGetCredentialId_nullDecodedJWT_returnsNull" classname="com.consentmanager.utils.JwtUtilTest" time="0.001"/>
+  <testcase name="testVerifyToken_invalidTokenSignature_returnsEmpty" classname="com.consentmanager.utils.JwtUtilTest" time="0.003">
+    <system-out><![CDATA[2025-07-01 16:46:28.142 [main] WARN  com.consentmanager.utils.JwtUtil - JWT verification failed: The Token's Signature resulted invalid when verified using the Algorithm: HmacSHA256
+]]></system-out>
+  </testcase>
+  <testcase name="testGetRole_nullDecodedJWT_returnsNull" classname="com.consentmanager.utils.JwtUtilTest" time="0.001"/>
+  <testcase name="testGetCredentialId_fromDecodedJWT" classname="com.consentmanager.utils.JwtUtilTest" time="0.009">
+    <system-out><![CDATA[2025-07-01 16:46:28.153 [main] DEBUG com.consentmanager.utils.JwtUtil - JWT generated successfully for credential ID: 77
+2025-07-01 16:46:28.154 [main] DEBUG com.consentmanager.utils.JwtUtil - JWT verified successfully for subject: 77
+]]></system-out>
+  </testcase>
+  <testcase name="testGenerateToken_nullRole_returnsNull" classname="com.consentmanager.utils.JwtUtilTest" time="0.001">
+    <system-out><![CDATA[2025-07-01 16:46:28.156 [main] WARN  com.consentmanager.utils.JwtUtil - Attempted to generate JWT with null or empty credentialId/role.
+]]></system-out>
+  </testcase>
+  <testcase name="testVerifyToken_validToken_returnsDecodedJWT" classname="com.consentmanager.utils.JwtUtilTest" time="0.003">
+    <system-out><![CDATA[2025-07-01 16:46:28.159 [main] DEBUG com.consentmanager.utils.JwtUtil - JWT generated successfully for credential ID: 10
+2025-07-01 16:46:28.160 [main] DEBUG com.consentmanager.utils.JwtUtil - JWT verified successfully for subject: 10
+]]></system-out>
+  </testcase>
+  <testcase name="testVerifyToken_expiredToken_returnsEmpty" classname="com.consentmanager.utils.JwtUtilTest" time="0.105">
+    <system-out><![CDATA[2025-07-01 16:46:28.266 [main] WARN  com.consentmanager.utils.JwtUtil - JWT verification failed: The Token has expired on 2025-07-01T16:46:18Z.
+]]></system-out>
+  </testcase>
+</testsuite>

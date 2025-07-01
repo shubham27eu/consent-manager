@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.consentmanager.daos.ProviderDAOTest" time="0.07" tests="7" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/app/target/test-classes:/app/target/classes:/home/jules/.m2/repository/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar:/home/jules/.m2/repository/com/sparkjava/spark-core/2.9.4/spark-core-2.9.4.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-server/9.4.48.v20220622/jetty-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-http/9.4.48.v20220622/jetty-http-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util/9.4.48.v20220622/jetty-util-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-io/9.4.48.v20220622/jetty-io-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-webapp/9.4.48.v20220622/jetty-webapp-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-xml/9.4.48.v20220622/jetty-xml-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.48.v20220622/jetty-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-security/9.4.48.v20220622/jetty-security-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.48.v20220622/jetty-util-ajax-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-server/9.4.48.v20220622/websocket-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-common/9.4.48.v20220622/websocket-common-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-client/9.4.48.v20220622/websocket-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-client/9.4.48.v20220622/jetty-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-servlet/9.4.48.v20220622/websocket-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-api/9.4.48.v20220622/websocket-api-9.4.48.v20220622.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy/1.14.9/byte-buddy-1.14.9.jar:/home/jules/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.0/jackson-datatype-jsr310-2.17.0.jar:/home/jules/.m2/repository/com/auth0/java-jwt/4.4.0/java-jwt-4.4.0.jar:/home/jules/.m2/repository/org/mindrot/jbcrypt/0.4/jbcrypt-0.4.jar:/home/jules/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/home/jules/.m2/repository/ch/qos/logback/logback-classic/1.5.3/logback-classic-1.5.3.jar:/home/jules/.m2/repository/ch/qos/logback/logback-core/1.5.3/logback-core-1.5.3.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/home/jules/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/home/jules/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/home/jules/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/home/jules/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/jules/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:"/>
+    <property name="java.vm.vendor" value="Ubuntu"/>
+    <property name="JWT_SECRET_KEY" value="test-secret-key-that-is-definitely-long-enough-for-testing-this"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://ubuntu.com/"/>
+    <property name="user.timezone" value="Etc/UTC"/>
+    <property name="os.name" value="Linux"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-21-openjdk-amd64/lib"/>
+    <property name="sun.java.command" value="/app/target/surefire/surefirebooter-20250701164626034_3.jar /app/target/surefire 2025-07-01T16-46-25_927-jvmRun1 surefire-20250701164626034_1tmp surefire_0-20250701164626034_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/app/target/test-classes:/app/target/classes:/home/jules/.m2/repository/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar:/home/jules/.m2/repository/com/sparkjava/spark-core/2.9.4/spark-core-2.9.4.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-server/9.4.48.v20220622/jetty-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-http/9.4.48.v20220622/jetty-http-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util/9.4.48.v20220622/jetty-util-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-io/9.4.48.v20220622/jetty-io-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-webapp/9.4.48.v20220622/jetty-webapp-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-xml/9.4.48.v20220622/jetty-xml-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.48.v20220622/jetty-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-security/9.4.48.v20220622/jetty-security-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.48.v20220622/jetty-util-ajax-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-server/9.4.48.v20220622/websocket-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-common/9.4.48.v20220622/websocket-common-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-client/9.4.48.v20220622/websocket-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-client/9.4.48.v20220622/jetty-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-servlet/9.4.48.v20220622/websocket-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-api/9.4.48.v20220622/websocket-api-9.4.48.v20220622.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy/1.14.9/byte-buddy-1.14.9.jar:/home/jules/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.0/jackson-datatype-jsr310-2.17.0.jar:/home/jules/.m2/repository/com/auth0/java-jwt/4.4.0/java-jwt-4.4.0.jar:/home/jules/.m2/repository/org/mindrot/jbcrypt/0.4/jbcrypt-0.4.jar:/home/jules/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/home/jules/.m2/repository/ch/qos/logback/logback-classic/1.5.3/logback-classic-1.5.3.jar:/home/jules/.m2/repository/ch/qos/logback/logback-core/1.5.3/logback-core-1.5.3.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/home/jules/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/home/jules/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/home/jules/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/home/jules/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/jules/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/home/jules"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-04-15"/>
+    <property name="java.home" value="/usr/lib/jvm/java-21-openjdk-amd64"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/app"/>
+    <property name="java.vm.compressedOopsMode" value="32-bit"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="/app/target/surefire/surefirebooter-20250701164626034_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="21.0.7+6-Ubuntu-0ubuntu124.04"/>
+    <property name="user.name" value="jules"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="6.8.0"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/home/jules/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://bugs.launchpad.net/ubuntu/+source/openjdk-21"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="java.version" value="21.0.7"/>
+    <property name="user.dir" value="/app"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/usr/java/packages/lib:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Ubuntu"/>
+    <property name="java.vm.version" value="21.0.7+6-Ubuntu-0ubuntu124.04"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="testFindByEmail_existing_returnsProvider" classname="com.consentmanager.daos.ProviderDAOTest" time="0.018">
+    <system-out><![CDATA[2025-07-01 16:46:33.261 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.261 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.264 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.264 [main] DEBUG c.c.daos.ProviderDAOTest - Setup complete for ProviderDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@1756f7cc
+2025-07-01 16:46:33.265 [main] DEBUG c.consentmanager.daos.CredentialDAO - Attempting to save credential for username: providerUserFindByEmail
+2025-07-01 16:46:33.266 [main] INFO  c.consentmanager.daos.CredentialDAO - Credential saved successfully for username: providerUserFindByEmail with ID: 1
+2025-07-01 16:46:33.276 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to save provider with credential ID: 1
+2025-07-01 16:46:33.276 [main] INFO  com.consentmanager.daos.ProviderDAO - Provider saved successfully with ID: 1 for credential ID: 1
+2025-07-01 16:46:33.277 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to find provider by email: providerFindByEmail@example.com
+2025-07-01 16:46:33.278 [main] DEBUG c.c.daos.ProviderDAOTest - Closing test connection for ProviderDAOTest: org.sqlite.jdbc4.JDBC4Connection@1756f7cc
+]]></system-out>
+  </testcase>
+  <testcase name="testFindAllByStatus_findsActiveAndInactive" classname="com.consentmanager.daos.ProviderDAOTest" time="0.012">
+    <system-out><![CDATA[2025-07-01 16:46:33.280 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.280 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.285 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.286 [main] DEBUG c.c.daos.ProviderDAOTest - Setup complete for ProviderDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@5eea5627
+2025-07-01 16:46:33.286 [main] DEBUG c.consentmanager.daos.CredentialDAO - Attempting to save credential for username: providerUserActive1
+2025-07-01 16:46:33.287 [main] INFO  c.consentmanager.daos.CredentialDAO - Credential saved successfully for username: providerUserActive1 with ID: 1
+2025-07-01 16:46:33.287 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to save provider with credential ID: 1
+2025-07-01 16:46:33.287 [main] INFO  com.consentmanager.daos.ProviderDAO - Provider saved successfully with ID: 1 for credential ID: 1
+2025-07-01 16:46:33.287 [main] DEBUG c.consentmanager.daos.CredentialDAO - Attempting to save credential for username: providerUserActive2
+2025-07-01 16:46:33.287 [main] INFO  c.consentmanager.daos.CredentialDAO - Credential saved successfully for username: providerUserActive2 with ID: 2
+2025-07-01 16:46:33.287 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to save provider with credential ID: 2
+2025-07-01 16:46:33.288 [main] INFO  com.consentmanager.daos.ProviderDAO - Provider saved successfully with ID: 2 for credential ID: 2
+2025-07-01 16:46:33.288 [main] DEBUG c.consentmanager.daos.CredentialDAO - Attempting to save credential for username: providerUserInactive1
+2025-07-01 16:46:33.288 [main] INFO  c.consentmanager.daos.CredentialDAO - Credential saved successfully for username: providerUserInactive1 with ID: 3
+2025-07-01 16:46:33.288 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to save provider with credential ID: 3
+2025-07-01 16:46:33.289 [main] INFO  com.consentmanager.daos.ProviderDAO - Provider saved successfully with ID: 3 for credential ID: 3
+2025-07-01 16:46:33.289 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to find all providers with isActive = true
+2025-07-01 16:46:33.289 [main] INFO  com.consentmanager.daos.ProviderDAO - Found 2 providers with isActive = true
+2025-07-01 16:46:33.290 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to find all providers with isActive = false
+2025-07-01 16:46:33.290 [main] INFO  com.consentmanager.daos.ProviderDAO - Found 1 providers with isActive = false
+2025-07-01 16:46:33.291 [main] DEBUG c.c.daos.ProviderDAOTest - Closing test connection for ProviderDAOTest: org.sqlite.jdbc4.JDBC4Connection@5eea5627
+]]></system-out>
+  </testcase>
+  <testcase name="testUpdateActiveStatus_validId_updatesStatus" classname="com.consentmanager.daos.ProviderDAOTest" time="0.009">
+    <system-out><![CDATA[2025-07-01 16:46:33.293 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.293 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.297 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.297 [main] DEBUG c.c.daos.ProviderDAOTest - Setup complete for ProviderDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@5cbd94b2
+2025-07-01 16:46:33.298 [main] DEBUG c.consentmanager.daos.CredentialDAO - Attempting to save credential for username: providerUser3
+2025-07-01 16:46:33.298 [main] INFO  c.consentmanager.daos.CredentialDAO - Credential saved successfully for username: providerUser3 with ID: 1
+2025-07-01 16:46:33.298 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to save provider with credential ID: 1
+2025-07-01 16:46:33.299 [main] INFO  com.consentmanager.daos.ProviderDAO - Provider saved successfully with ID: 1 for credential ID: 1
+2025-07-01 16:46:33.299 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to update active status for provider ID: 1 to false
+2025-07-01 16:46:33.299 [main] INFO  com.consentmanager.daos.ProviderDAO - Successfully updated active status for provider ID: 1
+2025-07-01 16:46:33.299 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to find provider by provider ID: 1
+2025-07-01 16:46:33.300 [main] DEBUG com.consentmanager.daos.ProviderDAO - Provider found by provider ID: 1
+2025-07-01 16:46:33.300 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to update active status for provider ID: 1 to true
+2025-07-01 16:46:33.300 [main] INFO  com.consentmanager.daos.ProviderDAO - Successfully updated active status for provider ID: 1
+2025-07-01 16:46:33.300 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to find provider by provider ID: 1
+2025-07-01 16:46:33.300 [main] DEBUG com.consentmanager.daos.ProviderDAO - Provider found by provider ID: 1
+2025-07-01 16:46:33.300 [main] DEBUG c.c.daos.ProviderDAOTest - Closing test connection for ProviderDAOTest: org.sqlite.jdbc4.JDBC4Connection@5cbd94b2
+]]></system-out>
+  </testcase>
+  <testcase name="testFindById_nonExisting_returnsEmpty" classname="com.consentmanager.daos.ProviderDAOTest" time="0.005">
+    <system-out><![CDATA[2025-07-01 16:46:33.303 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.303 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.305 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.306 [main] DEBUG c.c.daos.ProviderDAOTest - Setup complete for ProviderDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@705a8dbc
+2025-07-01 16:46:33.306 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to find provider by provider ID: 99999
+2025-07-01 16:46:33.306 [main] DEBUG com.consentmanager.daos.ProviderDAO - No provider found for provider ID: 99999
+2025-07-01 16:46:33.307 [main] DEBUG c.c.daos.ProviderDAOTest - Closing test connection for ProviderDAOTest: org.sqlite.jdbc4.JDBC4Connection@705a8dbc
+]]></system-out>
+  </testcase>
+  <testcase name="testFindByCredentialId_existing_returnsProvider" classname="com.consentmanager.daos.ProviderDAOTest" time="0.007">
+    <system-out><![CDATA[2025-07-01 16:46:33.308 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.309 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.312 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.313 [main] DEBUG c.c.daos.ProviderDAOTest - Setup complete for ProviderDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@d535a3d
+2025-07-01 16:46:33.313 [main] DEBUG c.consentmanager.daos.CredentialDAO - Attempting to save credential for username: providerUser2
+2025-07-01 16:46:33.313 [main] INFO  c.consentmanager.daos.CredentialDAO - Credential saved successfully for username: providerUser2 with ID: 1
+2025-07-01 16:46:33.314 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to save provider with credential ID: 1
+2025-07-01 16:46:33.314 [main] INFO  com.consentmanager.daos.ProviderDAO - Provider saved successfully with ID: 1 for credential ID: 1
+2025-07-01 16:46:33.314 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to find provider by credential ID: 1
+2025-07-01 16:46:33.314 [main] DEBUG com.consentmanager.daos.ProviderDAO - Provider found by credential ID: 1
+2025-07-01 16:46:33.315 [main] DEBUG c.c.daos.ProviderDAOTest - Closing test connection for ProviderDAOTest: org.sqlite.jdbc4.JDBC4Connection@d535a3d
+]]></system-out>
+  </testcase>
+  <testcase name="testUpdateActiveStatus_invalidId_returnsFalse" classname="com.consentmanager.daos.ProviderDAOTest" time="0.005">
+    <system-out><![CDATA[2025-07-01 16:46:33.317 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.317 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.320 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.320 [main] DEBUG c.c.daos.ProviderDAOTest - Setup complete for ProviderDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@5dbb50f3
+2025-07-01 16:46:33.321 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to update active status for provider ID: 888777 to false
+2025-07-01 16:46:33.321 [main] WARN  com.consentmanager.daos.ProviderDAO - Failed to update active status, provider not found or status unchanged for ID: 888777
+2025-07-01 16:46:33.321 [main] DEBUG c.c.daos.ProviderDAOTest - Closing test connection for ProviderDAOTest: org.sqlite.jdbc4.JDBC4Connection@5dbb50f3
+]]></system-out>
+  </testcase>
+  <testcase name="testSaveProvider_success" classname="com.consentmanager.daos.ProviderDAOTest" time="0.007">
+    <system-out><![CDATA[2025-07-01 16:46:33.323 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.323 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.326 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.327 [main] DEBUG c.c.daos.ProviderDAOTest - Setup complete for ProviderDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@575c3e9b
+2025-07-01 16:46:33.327 [main] DEBUG c.consentmanager.daos.CredentialDAO - Attempting to save credential for username: providerUser1
+2025-07-01 16:46:33.327 [main] INFO  c.consentmanager.daos.CredentialDAO - Credential saved successfully for username: providerUser1 with ID: 1
+2025-07-01 16:46:33.328 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to save provider with credential ID: 1
+2025-07-01 16:46:33.328 [main] INFO  com.consentmanager.daos.ProviderDAO - Provider saved successfully with ID: 1 for credential ID: 1
+2025-07-01 16:46:33.328 [main] DEBUG com.consentmanager.daos.ProviderDAO - Attempting to find provider by provider ID: 1
+2025-07-01 16:46:33.328 [main] DEBUG com.consentmanager.daos.ProviderDAO - Provider found by provider ID: 1
+2025-07-01 16:46:33.329 [main] DEBUG c.c.daos.ProviderDAOTest - Closing test connection for ProviderDAOTest: org.sqlite.jdbc4.JDBC4Connection@575c3e9b
+]]></system-out>
+  </testcase>
+</testsuite>

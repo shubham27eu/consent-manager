@@ -1,0 +1,10 @@
+/app/src/test/java/com/consentmanager/daos/ProviderBacklogDAOTest.java
+/app/src/test/java/com/consentmanager/daos/AdminDAOTest.java
+/app/src/test/java/com/consentmanager/services/AdminServiceTest.java
+/app/src/test/java/com/consentmanager/services/AuthServiceTest.java
+/app/src/test/java/com/consentmanager/daos/CredentialDAOTest.java
+/app/src/test/java/com/consentmanager/daos/SeekerDAOTest.java
+/app/src/test/java/com/consentmanager/utils/JwtUtilTest.java
+/app/src/test/java/com/consentmanager/daos/ProviderDAOTest.java
+/app/src/test/java/com/consentmanager/daos/SeekerBacklogDAOTest.java
+/app/src/test/java/com/consentmanager/utils/PasswordUtilTest.java

@@ -1,0 +1,10 @@
+com/consentmanager/utils/PasswordUtilTest.class
+com/consentmanager/daos/AdminDAOTest.class
+com/consentmanager/daos/ProviderBacklogDAOTest.class
+com/consentmanager/services/AdminServiceTest.class
+com/consentmanager/daos/SeekerDAOTest.class
+com/consentmanager/daos/SeekerBacklogDAOTest.class
+com/consentmanager/utils/JwtUtilTest.class
+com/consentmanager/daos/ProviderDAOTest.class
+com/consentmanager/daos/CredentialDAOTest.class
+com/consentmanager/services/AuthServiceTest.class

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.084" tests="9" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/app/target/test-classes:/app/target/classes:/home/jules/.m2/repository/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar:/home/jules/.m2/repository/com/sparkjava/spark-core/2.9.4/spark-core-2.9.4.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-server/9.4.48.v20220622/jetty-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-http/9.4.48.v20220622/jetty-http-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util/9.4.48.v20220622/jetty-util-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-io/9.4.48.v20220622/jetty-io-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-webapp/9.4.48.v20220622/jetty-webapp-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-xml/9.4.48.v20220622/jetty-xml-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.48.v20220622/jetty-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-security/9.4.48.v20220622/jetty-security-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.48.v20220622/jetty-util-ajax-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-server/9.4.48.v20220622/websocket-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-common/9.4.48.v20220622/websocket-common-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-client/9.4.48.v20220622/websocket-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-client/9.4.48.v20220622/jetty-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-servlet/9.4.48.v20220622/websocket-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-api/9.4.48.v20220622/websocket-api-9.4.48.v20220622.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy/1.14.9/byte-buddy-1.14.9.jar:/home/jules/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.0/jackson-datatype-jsr310-2.17.0.jar:/home/jules/.m2/repository/com/auth0/java-jwt/4.4.0/java-jwt-4.4.0.jar:/home/jules/.m2/repository/org/mindrot/jbcrypt/0.4/jbcrypt-0.4.jar:/home/jules/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/home/jules/.m2/repository/ch/qos/logback/logback-classic/1.5.3/logback-classic-1.5.3.jar:/home/jules/.m2/repository/ch/qos/logback/logback-core/1.5.3/logback-core-1.5.3.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/home/jules/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/home/jules/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/home/jules/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/home/jules/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/jules/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:"/>
+    <property name="java.vm.vendor" value="Ubuntu"/>
+    <property name="JWT_SECRET_KEY" value="test-secret-key-that-is-definitely-long-enough-for-testing-this"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://ubuntu.com/"/>
+    <property name="user.timezone" value="Etc/UTC"/>
+    <property name="os.name" value="Linux"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-21-openjdk-amd64/lib"/>
+    <property name="sun.java.command" value="/app/target/surefire/surefirebooter-20250701164626034_3.jar /app/target/surefire 2025-07-01T16-46-25_927-jvmRun1 surefire-20250701164626034_1tmp surefire_0-20250701164626034_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/app/target/test-classes:/app/target/classes:/home/jules/.m2/repository/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar:/home/jules/.m2/repository/com/sparkjava/spark-core/2.9.4/spark-core-2.9.4.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-server/9.4.48.v20220622/jetty-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-http/9.4.48.v20220622/jetty-http-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util/9.4.48.v20220622/jetty-util-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-io/9.4.48.v20220622/jetty-io-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-webapp/9.4.48.v20220622/jetty-webapp-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-xml/9.4.48.v20220622/jetty-xml-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.48.v20220622/jetty-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-security/9.4.48.v20220622/jetty-security-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.48.v20220622/jetty-util-ajax-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-server/9.4.48.v20220622/websocket-server-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-common/9.4.48.v20220622/websocket-common-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-client/9.4.48.v20220622/websocket-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/jetty-client/9.4.48.v20220622/jetty-client-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-servlet/9.4.48.v20220622/websocket-servlet-9.4.48.v20220622.jar:/home/jules/.m2/repository/org/eclipse/jetty/websocket/websocket-api/9.4.48.v20220622/websocket-api-9.4.48.v20220622.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar:/home/jules/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy/1.14.9/byte-buddy-1.14.9.jar:/home/jules/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.0/jackson-datatype-jsr310-2.17.0.jar:/home/jules/.m2/repository/com/auth0/java-jwt/4.4.0/java-jwt-4.4.0.jar:/home/jules/.m2/repository/org/mindrot/jbcrypt/0.4/jbcrypt-0.4.jar:/home/jules/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/home/jules/.m2/repository/ch/qos/logback/logback-classic/1.5.3/logback-classic-1.5.3.jar:/home/jules/.m2/repository/ch/qos/logback/logback-core/1.5.3/logback-core-1.5.3.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/home/jules/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/home/jules/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/jules/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/home/jules/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/home/jules/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/home/jules/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/home/jules/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/jules/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/home/jules"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-04-15"/>
+    <property name="java.home" value="/usr/lib/jvm/java-21-openjdk-amd64"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/app"/>
+    <property name="java.vm.compressedOopsMode" value="32-bit"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="/app/target/surefire/surefirebooter-20250701164626034_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="21.0.7+6-Ubuntu-0ubuntu124.04"/>
+    <property name="user.name" value="jules"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="6.8.0"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/home/jules/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://bugs.launchpad.net/ubuntu/+source/openjdk-21"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="java.version" value="21.0.7"/>
+    <property name="user.dir" value="/app"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/usr/java/packages/lib:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Ubuntu"/>
+    <property name="java.vm.version" value="21.0.7+6-Ubuntu-0ubuntu124.04"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="testCreatedAt_isParsedCorrectly" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.014">
+    <system-out><![CDATA[2025-07-01 16:46:33.175 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.176 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.179 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.183 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@5befbac1
+2025-07-01 16:46:33.184 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserTimeTestSeeker
+2025-07-01 16:46:33.185 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 1 for username: seekUserTimeTestSeeker
+2025-07-01 16:46:33.185 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to find seeker backlog by ID: 1
+2025-07-01 16:46:33.188 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@5befbac1
+]]></system-out>
+  </testcase>
+  <testcase name="testFindById_existing_returnsBacklog" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.007">
+    <system-out><![CDATA[2025-07-01 16:46:33.190 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.190 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.193 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.194 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@69cd1085
+2025-07-01 16:46:33.194 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserFindByIdS
+2025-07-01 16:46:33.195 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 1 for username: seekUserFindByIdS
+2025-07-01 16:46:33.195 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to find seeker backlog by ID: 1
+2025-07-01 16:46:33.196 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@69cd1085
+]]></system-out>
+  </testcase>
+  <testcase name="testSaveSeekerBacklog_success" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.008">
+    <system-out><![CDATA[2025-07-01 16:46:33.198 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.198 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.201 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.201 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@40fa8766
+2025-07-01 16:46:33.202 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserSave
+2025-07-01 16:46:33.202 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 1 for username: seekUserSave
+2025-07-01 16:46:33.203 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to find seeker backlog by ID: 1
+2025-07-01 16:46:33.205 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@40fa8766
+]]></system-out>
+  </testcase>
+  <testcase name="testUpdateStatus_invalidId_returnsFalse" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.006">
+    <system-out><![CDATA[2025-07-01 16:46:33.207 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.207 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.210 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.210 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@663f237a
+2025-07-01 16:46:33.211 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to update status for seeker backlog ID: 888222 to approved
+2025-07-01 16:46:33.211 [main] WARN  c.c.daos.SeekerBacklogDAO - Failed to update status, seeker backlog not found or status unchanged for ID: 888222
+2025-07-01 16:46:33.211 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@663f237a
+]]></system-out>
+  </testcase>
+  <testcase name="testFindByUsername_existing_returnsBacklog" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.008">
+    <system-out><![CDATA[2025-07-01 16:46:33.213 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.214 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.219 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.219 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@49a6f486
+2025-07-01 16:46:33.220 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserFindByUserS
+2025-07-01 16:46:33.220 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 1 for username: seekUserFindByUserS
+2025-07-01 16:46:33.220 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to find seeker backlog by username: seekUserFindByUserS
+2025-07-01 16:46:33.221 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@49a6f486
+]]></system-out>
+  </testcase>
+  <testcase name="testSaveSeekerBacklog_duplicateUsername_fails" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.01">
+    <system-out><![CDATA[2025-07-01 16:46:33.223 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.225 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.229 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.229 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@bc6288b
+2025-07-01 16:46:33.229 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserDupUserS
+2025-07-01 16:46:33.230 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 1 for username: seekUserDupUserS
+2025-07-01 16:46:33.230 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserDupUserS
+2025-07-01 16:46:33.231 [main] ERROR c.c.daos.SeekerBacklogDAO - Error saving seeker backlog for username seekUserDupUserS
+org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_UNIQUE] A UNIQUE constraint failed (UNIQUE constraint failed: SeekerBacklog.registration_no)
+	at org.sqlite.core.DB.newSQLException(DB.java:1179)
+	at org.sqlite.core.DB.newSQLException(DB.java:1190)
+	at org.sqlite.core.DB.execute(DB.java:985)
+	at org.sqlite.core.DB.executeUpdate(DB.java:1054)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$executeLargeUpdate$2(JDBC3PreparedStatement.java:129)
+	at org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout(JDBC3Statement.java:454)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeLargeUpdate(JDBC3PreparedStatement.java:124)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.executeUpdate(JDBC3PreparedStatement.java:105)
+	at com.consentmanager.daos.SeekerBacklogDAO.saveSeekerBacklog(SeekerBacklogDAO.java:67)
+	at com.consentmanager.daos.SeekerBacklogDAOTest.testSaveSeekerBacklog_duplicateUsername_fails(SeekerBacklogDAOTest.java:70)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2025-07-01 16:46:33.231 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@bc6288b
+]]></system-out>
+  </testcase>
+  <testcase name="testUpdateStatus_validId_updates" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.006">
+    <system-out><![CDATA[2025-07-01 16:46:33.233 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.234 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.237 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.237 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@4f2d995e
+2025-07-01 16:46:33.238 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserUpdateStatusS
+2025-07-01 16:46:33.238 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 1 for username: seekUserUpdateStatusS
+2025-07-01 16:46:33.238 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to update status for seeker backlog ID: 1 to approved
+2025-07-01 16:46:33.238 [main] INFO  c.c.daos.SeekerBacklogDAO - Successfully updated status for seeker backlog ID: 1
+2025-07-01 16:46:33.238 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to find seeker backlog by ID: 1
+2025-07-01 16:46:33.239 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@4f2d995e
+]]></system-out>
+  </testcase>
+  <testcase name="testFindByEmail_existing_returnsBacklog" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.008">
+    <system-out><![CDATA[2025-07-01 16:46:33.241 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.242 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.245 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.246 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@6198e9b5
+2025-07-01 16:46:33.246 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserFindByEmailTestS
+2025-07-01 16:46:33.247 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 1 for username: seekUserFindByEmailTestS
+2025-07-01 16:46:33.247 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to find seeker backlog by email: seekFindByEmailTestS@example.com
+2025-07-01 16:46:33.247 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@6198e9b5
+]]></system-out>
+  </testcase>
+  <testcase name="testFindByStatus_returnsMatchingBacklogs" classname="com.consentmanager.daos.SeekerBacklogDAOTest" time="0.009">
+    <system-out><![CDATA[2025-07-01 16:46:33.249 [main] DEBUG c.consentmanager.utils.DatabaseUtil - Created new in-memory test connection: jdbc:sqlite::memory:
+2025-07-01 16:46:33.249 [main] INFO  c.consentmanager.utils.DatabaseUtil - Executing schema script: /schema.sql for DB: jdbc:sqlite::memory:
+2025-07-01 16:46:33.252 [main] INFO  c.consentmanager.utils.DatabaseUtil - Database schema executed successfully for jdbc:sqlite::memory:. 20 statements processed.
+2025-07-01 16:46:33.253 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Setup complete for SeekerBacklogDAOTest with connection: org.sqlite.jdbc4.JDBC4Connection@4ecd00b5
+2025-07-01 16:46:33.253 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserStatusS1
+2025-07-01 16:46:33.254 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 1 for username: seekUserStatusS1
+2025-07-01 16:46:33.254 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserStatusS2
+2025-07-01 16:46:33.254 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 2 for username: seekUserStatusS2
+2025-07-01 16:46:33.254 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to save seeker backlog for username: seekUserStatusS3
+2025-07-01 16:46:33.255 [main] INFO  c.c.daos.SeekerBacklogDAO - Seeker backlog saved successfully with ID: 3 for username: seekUserStatusS3
+2025-07-01 16:46:33.255 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to find seeker backlogs by status: pending
+2025-07-01 16:46:33.256 [main] INFO  c.c.daos.SeekerBacklogDAO - Found 2 seeker backlogs with status: pending
+2025-07-01 16:46:33.256 [main] DEBUG c.c.daos.SeekerBacklogDAO - Attempting to find seeker backlogs by status: approved
+2025-07-01 16:46:33.257 [main] INFO  c.c.daos.SeekerBacklogDAO - Found 1 seeker backlogs with status: approved
+2025-07-01 16:46:33.257 [main] DEBUG c.c.daos.SeekerBacklogDAOTest - Closing test connection for SeekerBacklogDAOTest: org.sqlite.jdbc4.JDBC4Connection@4ecd00b5
+]]></system-out>
+  </testcase>
+</testsuite>

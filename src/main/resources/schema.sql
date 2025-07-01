@@ -1,0 +1,148 @@
+-- Enable Foreign Key support if not enabled by default by the driver/connection
+PRAGMA foreign_keys = ON;
+
+-- Credential Table
+CREATE TABLE IF NOT EXISTS Credential (
+    credential_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL CHECK(role IN ('provider', 'seeker', 'admin'))
+);
+
+-- Admin Table
+CREATE TABLE IF NOT EXISTS Admin (
+    admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    credential_id INTEGER NOT NULL UNIQUE,
+    first_name TEXT NOT NULL,
+    middle_name TEXT,
+    last_name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    mobile_no TEXT NOT NULL,
+    date_of_birth TEXT, -- Store as ISO8601 string: YYYY-MM-DD
+    FOREIGN KEY(credential_id) REFERENCES Credential(credential_id) ON DELETE CASCADE
+);
+
+-- Provider Table
+CREATE TABLE IF NOT EXISTS Provider (
+    provider_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    credential_id INTEGER NOT NULL UNIQUE,
+    first_name TEXT NOT NULL,
+    middle_name TEXT,
+    last_name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    mobile_no TEXT NOT NULL,
+    date_of_birth TEXT NOT NULL, -- Store as ISO8601 string
+    age INTEGER NOT NULL,
+    public_key TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0, 1)),
+    FOREIGN KEY(credential_id) REFERENCES Credential(credential_id) ON DELETE CASCADE
+);
+
+-- Seeker Table
+CREATE TABLE IF NOT EXISTS Seeker (
+    seeker_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    credential_id INTEGER NOT NULL UNIQUE,
+    name TEXT UNIQUE NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('Bank', 'Government', 'Private Company', 'Other')),
+    registration_no TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    contact_no TEXT NOT NULL,
+    address TEXT NOT NULL,
+    public_key TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0, 1)),
+    FOREIGN KEY(credential_id) REFERENCES Credential(credential_id) ON DELETE CASCADE
+);
+
+-- ProviderBacklog Table
+CREATE TABLE IF NOT EXISTS ProviderBacklog (
+    backlog_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'provider' CHECK(role = 'provider'),
+    first_name TEXT NOT NULL,
+    middle_name TEXT,
+    last_name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    date_of_birth TEXT NOT NULL,
+    mobile_no TEXT NOT NULL,
+    age INTEGER NOT NULL,
+    gender TEXT NOT NULL CHECK(gender IN ('Male', 'Female')),
+    public_key TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'rejected', 'approved')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP -- Store as ISO8601 string
+);
+
+-- SeekerBacklog Table
+CREATE TABLE IF NOT EXISTS SeekerBacklog (
+    backlog_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'seeker' CHECK(role = 'seeker'),
+    name TEXT UNIQUE NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('Bank', 'Government', 'Private Company', 'Other')),
+    registration_no TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    contact_no TEXT NOT NULL,
+    address TEXT NOT NULL,
+    public_key TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'rejected', 'approved')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP -- Store as ISO8601 string
+);
+
+-- DataItem Table
+CREATE TABLE IF NOT EXISTS DataItem (
+    item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_name TEXT NOT NULL,
+    item_type TEXT NOT NULL,
+    item_owner_id INTEGER NOT NULL,
+    encrypted_data BLOB,
+    encrypted_url TEXT,
+    encrypted_aes_key TEXT NOT NULL,
+    iv TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0, 1)),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(item_owner_id) REFERENCES Provider(provider_id) ON DELETE CASCADE
+);
+
+-- Consent Table
+CREATE TABLE IF NOT EXISTS Consent (
+    consent_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id INTEGER NOT NULL,
+    seeker_id INTEGER NOT NULL,
+    provider_id INTEGER NOT NULL,
+    validity_period TEXT NOT NULL, -- Store as ISO8601 string
+    access_count INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'rejected', 'approved', 'count exhausted', 'revoked', 'expired')),
+    encrypted_aes_key_for_seeker TEXT,
+    date_created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0, 1)),
+    FOREIGN KEY(item_id) REFERENCES DataItem(item_id) ON DELETE CASCADE,
+    FOREIGN KEY(seeker_id) REFERENCES Seeker(seeker_id) ON DELETE CASCADE,
+    FOREIGN KEY(provider_id) REFERENCES Provider(provider_id) ON DELETE CASCADE
+);
+
+-- ConsentHistory Table
+CREATE TABLE IF NOT EXISTS ConsentHistory (
+    history_id TEXT PRIMARY KEY, -- UUID, generated by application
+    consent_id INTEGER NOT NULL,
+    changed_by TEXT NOT NULL, -- User ID (can be Credential.credential_id) or 'system'
+    previous_status TEXT CHECK(previous_status IN ('pending', 'rejected', 'approved', 'count exhausted', 'revoked', 'expired', NULL)),
+    new_status TEXT NOT NULL CHECK(new_status IN ('pending', 'rejected', 'approved', 'count exhausted', 'revoked', 'expired')),
+    action_type TEXT NOT NULL CHECK(action_type IN ('request', 'approve', 'access', 'revoke', 'expire', 'reject')),
+    timestamp TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    remarks TEXT,
+    additional_info TEXT,
+    FOREIGN KEY(consent_id) REFERENCES Consent(consent_id) ON DELETE CASCADE
+);
+
+-- Indexes for frequently queried columns (examples)
+CREATE INDEX IF NOT EXISTS idx_credential_username ON Credential(username);
+CREATE INDEX IF NOT EXISTS idx_provider_email ON Provider(email);
+CREATE INDEX IF NOT EXISTS idx_seeker_email ON Seeker(email);
+CREATE INDEX IF NOT EXISTS idx_dataitem_owner ON DataItem(item_owner_id);
+CREATE INDEX IF NOT EXISTS idx_consent_item ON Consent(item_id);
+CREATE INDEX IF NOT EXISTS idx_consent_seeker ON Consent(seeker_id);
+CREATE INDEX IF NOT EXISTS idx_consent_provider ON Consent(provider_id);
+CREATE INDEX IF NOT EXISTS idx_consenthistory_consent ON ConsentHistory(consent_id);
+CREATE INDEX IF NOT EXISTS idx_providerbacklog_status ON ProviderBacklog(status);
+CREATE INDEX IF NOT EXISTS idx_seekerbacklog_status ON SeekerBacklog(status);
