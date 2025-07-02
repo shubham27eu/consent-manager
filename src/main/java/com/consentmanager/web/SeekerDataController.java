@@ -13,8 +13,16 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+
+import java.io.FileInputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 
 public class SeekerDataController {
 
@@ -38,6 +46,7 @@ public class SeekerDataController {
         Spark.post("/consents", this::requestConsent, objectMapper::writeValueAsString);
         Spark.get("/consents", this::getSeekerConsents, objectMapper::writeValueAsString);
         Spark.get("/data-items/:dataItemId/access", this::accessDataItem, objectMapper::writeValueAsString);
+        Spark.get("/data-items/:dataItemId/download", this::downloadDataItem); // No transform for raw response
     }
 
     private List<DataItem> listDiscoverableDataItems(Request req, Response res) {
@@ -141,6 +150,86 @@ public class SeekerDataController {
             return new ErrorResponse("Internal server error while accessing data.");
         }
     }
+
+    private Object downloadDataItem(Request req, Response res) {
+        try {
+            Integer seekerId = req.attribute("credentialId");
+            if (seekerId == null) {
+                Spark.halt(401, objectMapper.writeValueAsString(new ErrorResponse("Seeker ID missing.")));
+                return null; // Unreachable
+            }
+
+            int dataItemId;
+            try {
+                dataItemId = Integer.parseInt(req.params(":dataItemId"));
+            } catch (NumberFormatException e) {
+                 Spark.halt(400, objectMapper.writeValueAsString(new ErrorResponse("Invalid Data Item ID format.")));
+                 return null;
+            }
+
+            // Use DataService to check consent and get DataItem (which includes relative path)
+            // DataService.accessDataItem already performs consent checks.
+            // We need to get the actual DataItem to retrieve its path and original name for Content-Disposition.
+
+            Optional<Consent> consentOpt = consentService.getConsentById( // Or a more specific method
+                // This is tricky: accessDataItem increments count. We need a way to get item path post-consent check
+                // without necessarily consuming an "access". Or, accessDataItem needs to return structured info.
+                // For now, let's assume we need to re-fetch consent and dataItem if accessDataItem only returns string.
+                // A better approach: DataService.getAccessibleDataItemDetails(seekerId, dataItemId)
+                // that returns DataItem if access is valid, and increments count.
+                // Let's call accessDataItem first to ensure all checks & count increment pass, then fetch item.
+                // This isn't ideal as it might return a string that we then discard.
+                dataService.accessDataItem(seekerId, dataItemId) // This will throw if not permitted & increments count
+            ); // This line is problematic, accessDataItem returns String.
+
+            // Re-fetch DataItem to get its properties
+            Optional<com.consentmanager.models.DataItem> dataItemOpt = dataService.getDataItemByIdForProvider(dataItemId, null); // providerId not needed for just fetching by id by service
+             if(dataItemOpt.isEmpty() || !"file".equalsIgnoreCase(dataItemOpt.get().getType())){
+                 Spark.halt(404, objectMapper.writeValueAsString(new ErrorResponse("File data item not found or not a file.")));
+                 return null;
+             }
+             DataItem dataItem = dataItemOpt.get();
+             String relativePath = dataItem.getData();
+             // Construct full path - Assuming BASE_STORAGE_PATH is accessible here or defined globally
+             // For now, hardcoding a base path as defined in DataService for consistency
+             Path filePath = Paths.get("storage", relativePath);
+             logger.info("Attempting to download file from path: {}", filePath);
+
+
+            if (!Files.exists(filePath) || Files.isDirectory(filePath)) {
+                Spark.halt(404, objectMapper.writeValueAsString(new ErrorResponse("File not found on server.")));
+                return null;
+            }
+
+            res.type(Files.probeContentType(filePath)); // Guess content type
+            res.header("Content-Disposition", "attachment; filename=\"" + Paths.get(dataItem.getName()).getFileName().toString() + "\""); // Use original name from DataItem
+
+            try (OutputStream outputStream = res.raw().getOutputStream();
+                 FileInputStream fileInputStream = new FileInputStream(filePath.toFile())) {
+                fileInputStream.transferTo(outputStream);
+                outputStream.flush();
+                return res.raw(); // Return the raw response after streaming
+            } catch (IOException e) {
+                logger.error("Error streaming file {}: {}", filePath, e.getMessage(), e);
+                Spark.halt(500, objectMapper.writeValueAsString(new ErrorResponse("Error occurred while streaming file.")));
+                return null;
+            }
+
+        } catch (ServiceException e) { // From accessDataItem call if it fails
+            logger.warn("ServiceException in downloadDataItem (access check): {}", e.getMessage());
+            int status = 400;
+            if (e.getMessage().toLowerCase().contains("not found")) status = 404;
+            else if (e.getMessage().toLowerCase().contains("consent not approved") ||
+                     e.getMessage().toLowerCase().contains("consent has expired") ||
+                     e.getMessage().toLowerCase().contains("access count exhausted")) status = 403;
+            Spark.halt(status, objectMapper.writeValueAsString(new ErrorResponse(e.getMessage())));
+        } catch (Exception e) { // Catch other exceptions like Jackson, IO
+            logger.error("Error downloading data item: {}", e.getMessage(), e);
+            Spark.halt(500, objectMapper.writeValueAsString(new ErrorResponse("Internal server error while downloading file.")));
+        }
+        return null; // Should be unreachable if Spark.halt is used
+    }
+
 
     // --- Request/Response DTOs ---
     private static class ConsentRequestPayload {

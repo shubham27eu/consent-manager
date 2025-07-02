@@ -8,7 +8,7 @@ import com.consentmanager.models.Consent;
 import com.consentmanager.models.ConsentHistory;
 import com.consentmanager.models.DataItem;
 import com.consentmanager.models.Seeker;
-// import com.consentmanager.utils.EncryptionUtil; // Will be needed
+import com.consentmanager.utils.EncryptionUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,20 +128,31 @@ public class ConsentService {
             approvedAt = LocalDateTime.now();
             DataItem dataItem = dataItemOpt.get();
 
-            // Placeholder: If data item is file/encrypted, re-encrypt its AES key for the seeker
             if (dataItem.getAesKeyEncrypted() != null && !dataItem.getAesKeyEncrypted().isEmpty()) {
                 Optional<Seeker> seekerOpt = seekerDAO.findById(consent.getSeekerId());
-                if (seekerOpt.isEmpty() || seekerOpt.get().getPublicKey() == null) {
-                    logger.error("Seeker {} or seeker's public key not found for consent approval.", consent.getSeekerId());
-                    throw new ServiceException("Seeker's public key not found, cannot approve consent for encrypted data.");
+                if (seekerOpt.isEmpty() || seekerOpt.get().getPublicKey() == null || seekerOpt.get().getPublicKey().isBlank()) {
+                    logger.error("Seeker ID {} or Seeker's public key not found/empty for consent approval of item ID {}.", consent.getSeekerId(), dataItem.getDataItemId());
+                    throw new ServiceException("Seeker's public key not found or empty, cannot approve consent for this encrypted data item.");
                 }
-                // String seekerPublicKey = seekerOpt.get().getPublicKey();
-                // String itemOriginalEncryptedAesKey = dataItem.getAesKeyEncrypted();
-                // String decryptedItemAesKey; // Placeholder: Decrypt itemOriginalEncryptedAesKey using provider's private key
-                // decryptedItemAesKey = "dummy_decrypted_aes_key_for_" + dataItem.getName(); // EncryptionUtil.decryptRSA(itemOriginalEncryptedAesKey, providerPrivateKey);
-                // reEncryptedAesKey = EncryptionUtil.encryptRSA(decryptedItemAesKey, seekerPublicKey);
-                reEncryptedAesKey = "placeholder_reencrypted_key_for_seeker_" + consent.getSeekerId() + "_item_" + dataItem.getDataItemId();
-                logger.info("Generated (placeholder) re-encrypted AES key for consent ID {}", consentId);
+                String seekerPublicKeyStr = seekerOpt.get().getPublicKey();
+
+                try {
+                    // 1. Decrypt DataItem's AES key (which was encrypted with System/Provider's public key)
+                    // For this, we need the System/Provider's private key.
+                    // Using the static system private key from EncryptionUtil for now.
+                    String dataItemAesKey = EncryptionUtil.decryptRSA(dataItem.getAesKeyEncrypted(), EncryptionUtil.getSystemRsaPrivateKeyString());
+
+                    // 2. Re-encrypt this AES key with the Seeker's public key
+                    reEncryptedAesKey = EncryptionUtil.encryptRSA(dataItemAesKey, seekerPublicKeyStr);
+                    logger.info("Successfully re-encrypted AES key for consent ID {} using seeker's public key.", consentId);
+
+                } catch (Exception e) {
+                    logger.error("Error during AES key re-encryption for consent ID {}: {}", consentId, e.getMessage(), e);
+                    throw new ServiceException("Failed to process encryption keys for consent approval.", e);
+                }
+            } else {
+                 logger.warn("Data item {} for consent {} has no encrypted AES key; re-encryption step skipped.", dataItem.getDataItemId(), consentId);
+                 reEncryptedAesKey = null; // Ensure it's null if not applicable
             }
         }
 

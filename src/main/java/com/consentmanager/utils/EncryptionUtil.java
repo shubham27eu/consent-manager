@@ -21,6 +21,34 @@ public class EncryptionUtil {
     private static final String RSA = "RSA";
     private static final int RSA_KEY_SIZE = 2048; // Standard RSA key size
 
+    // For simulating Provider's/System's RSA key pair for encrypting DataItem's AES key
+    public static final String SYSTEM_RSA_PUBLIC_KEY_STRING;
+    private static final String SYSTEM_RSA_PRIVATE_KEY_STRING;
+
+    static {
+        try {
+            KeyPair systemKeyPair = generateRsaKeyPair();
+            SYSTEM_RSA_PUBLIC_KEY_STRING = publicKeyToString(systemKeyPair.getPublic());
+            SYSTEM_RSA_PRIVATE_KEY_STRING = privateKeyToString(systemKeyPair.getPrivate());
+            logger.info("Initialized System RSA Public Key: {}", SYSTEM_RSA_PUBLIC_KEY_STRING);
+            // DO NOT log the private key in a real application
+            // logger.info("Initialized System RSA Private Key (FOR DEMO ONLY): {}", SYSTEM_RSA_PRIVATE_KEY_STRING);
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Failed to initialize system RSA key pair.", e);
+            throw new RuntimeException("Could not initialize system RSA key pair", e);
+        }
+    }
+
+    /**
+     * Returns the system's hardcoded/static private RSA key string.
+     * WARNING: This is for demonstration/simulation purposes only where the system acts as a key holder.
+     * In a real production system, private keys must be managed with extreme care and not exposed like this.
+     * @return The system's private RSA key as a Base64 encoded string.
+     */
+    public static String getSystemRsaPrivateKeyString() {
+        return SYSTEM_RSA_PRIVATE_KEY_STRING;
+    }
+
     // --- AES Methods ---
 
     /**

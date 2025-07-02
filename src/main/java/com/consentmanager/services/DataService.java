@@ -4,10 +4,16 @@ import com.consentmanager.daos.ConsentDAO;
 import com.consentmanager.daos.DataItemDAO;
 import com.consentmanager.models.Consent;
 import com.consentmanager.models.DataItem;
-// import com.consentmanager.utils.EncryptionUtil; // Will be needed later
+import com.consentmanager.utils.EncryptionUtil; // Will be needed later
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,19 +24,23 @@ import java.util.stream.Collectors;
 public class DataService {
 
     private static final Logger logger = LoggerFactory.getLogger(DataService.class);
+    private static final String BASE_STORAGE_PATH = "storage/"; // Base directory for storing files
     private DataItemDAO dataItemDAO;
-    private ConsentDAO consentDAO; // Needed for access control and logging access
+    private ConsentDAO consentDAO;
+    private ConsentHistoryDAO consentHistoryDAO; // For logging access
 
     // Constructor for dependency injection (testing and real use)
-    public DataService(DataItemDAO dataItemDAO, ConsentDAO consentDAO) {
+    public DataService(DataItemDAO dataItemDAO, ConsentDAO consentDAO, ConsentHistoryDAO consentHistoryDAO) {
         this.dataItemDAO = dataItemDAO;
         this.consentDAO = consentDAO;
+        this.consentHistoryDAO = consentHistoryDAO;
     }
 
-    // Overloaded constructor for convenience when connection is managed externally for both DAOs
+    // Overloaded constructor for convenience when connection is managed externally for all DAOs
     public DataService(Connection connection) {
         this.dataItemDAO = new DataItemDAO(connection);
         this.consentDAO = new ConsentDAO(connection);
+        this.consentHistoryDAO = new ConsentHistoryDAO(connection);
     }
 
 
@@ -46,43 +56,57 @@ public class DataService {
             throw new ServiceException("Provider ID, name, and type are required to create a data item.");
         }
 
-        String aesKeyEncrypted = null;
-        String processedData = dataContentOrPath;
+        String actualAesKey;
+        String aesKeyEncryptedWithProviderKey;
+        String finalDataToStore = dataContentOrPath;
 
-        // Simplified encryption placeholder:
-        // In a real scenario:
-        // 1. Generate actual AES key: String aesKey = EncryptionUtil.generateAesKeyString();
-        // 2. If type is "text", encrypt dataContentOrPath with aesKey: processedData = EncryptionUtil.encryptAES(dataContentOrPath, aesKey);
-        // 3. Encrypt aesKey with Provider's public key (or a master key): aesKeyEncrypted = EncryptionUtil.encryptRSA(aesKey, providerPublicKey);
-        // For now, let's assume aesKeyEncrypted is either null or a placeholder if type is "file"
+        try {
+            actualAesKey = EncryptionUtil.generateAesKeyString();
 
-        if ("file".equalsIgnoreCase(type)) {
-            try {
-                // String rawAesKey = EncryptionUtil.generateAesKeyString(); // Placeholder
-                // For now, just store a dummy placeholder for the encrypted key.
-                // Real implementation would encrypt 'rawAesKey' with provider's public key.
-                aesKeyEncrypted = "placeholder_encrypted_aes_key_for_" + name; // EncryptionUtil.encryptRSA(rawAesKey, providerPublicKey);
-                logger.info("Generated (placeholder) encrypted AES key for file data item: {}", name);
-            } catch (/*NoSuchAlgorithmException e*/ Exception e) { // General exception for placeholder
-                logger.error("Error generating placeholder AES key for data item {}: {}", name, e.getMessage());
-                throw new ServiceException("Failed to prepare data item due to key generation error.", e);
+            if ("file".equalsIgnoreCase(type)) {
+                Path providerDir = Paths.get(BASE_STORAGE_PATH, "provider_" + providerId);
+                Files.createDirectories(providerDir);
+                String uniqueFileName = name.replaceAll("[^a-zA-Z0-9.-]", "_") + "_" + System.currentTimeMillis();
+                Path filePath = providerDir.resolve(uniqueFileName);
+
+                byte[] rawFileBytes;
+                try {
+                    rawFileBytes = java.util.Base64.getDecoder().decode(dataContentOrPath);
+                } catch (IllegalArgumentException e) {
+                    logger.error("Invalid Base64 content for file item {}: {}", name, e.getMessage());
+                    throw new ServiceException("Invalid Base64 file content.", e);
+                }
+
+                // Encrypt the file content before saving
+                // For simplicity, encrypting bytes as if it were a string. Real file encryption might need streaming.
+                // This is a placeholder for actual byte[] encryption.
+                // Consider if encryptAES should take byte[] and return byte[]
+                String encryptedFileContentBase64 = EncryptionUtil.encryptAES(Base64.getEncoder().encodeToString(rawFileBytes), actualAesKey);
+                Files.write(filePath, Base64.getDecoder().decode(encryptedFileContentBase64), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+                finalDataToStore = providerDir.relativize(filePath).toString(); // Store relative path
+                logger.info("Encrypted file data item {} stored at: {}", name, filePath.toString());
+
+            } else if ("text".equalsIgnoreCase(type)) {
+                finalDataToStore = EncryptionUtil.encryptAES(dataContentOrPath, actualAesKey);
+                logger.info("Encrypted text data for item: {}", name);
             }
-        } else if ("text".equalsIgnoreCase(type)) {
-            // Optionally encrypt text data here as well using a similar AES key mechanism
-            // For simplicity now, we'll store text data as is, or a simple placeholder encryption
-             try {
-                // String rawAesKey = EncryptionUtil.generateAesKeyString();
-                // processedData = EncryptionUtil.encryptAES(dataContentOrPath, rawAesKey);
-                // aesKeyEncrypted = "placeholder_encrypted_aes_key_for_text_" + name; // Encrypt rawAesKey
-                logger.info("Processing text data item (encryption placeholder): {}", name);
-            } catch (/*NoSuchAlgorithmException e*/ Exception e) {
-                 logger.error("Error during placeholder text encryption for data item {}: {}", name, e.getMessage());
-                throw new ServiceException("Failed to prepare text data item.", e);
-            }
+            // Encrypt the AES key with the system/provider's public RSA key
+            aesKeyEncryptedWithProviderKey = EncryptionUtil.encryptRSA(actualAesKey, EncryptionUtil.SYSTEM_RSA_PUBLIC_KEY_STRING);
+
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("AES algorithm not found during key generation for {}: {}", name, e.getMessage(), e);
+            throw new ServiceException("Failed to generate encryption key.", e);
+        } catch (IOException e) {
+            logger.error("Error saving encrypted file for data item {}: {}", name, e.getMessage(), e);
+            throw new ServiceException("Failed to save encrypted file data.", e);
+        } catch (Exception e) {
+            logger.error("Error during encryption preparation for data item {}: {}", name, e.getMessage(), e);
+            throw new ServiceException("Failed to prepare encrypted data item.", e);
         }
 
 
-        DataItem newItem = new DataItem(providerId, name, description, type, processedData, aesKeyEncrypted);
+        DataItem newItem = new DataItem(providerId, name, description, type, finalDataToStore, aesKeyEncryptedWithProviderKey);
         DataItem savedItem = dataItemDAO.saveDataItem(newItem);
         if (savedItem == null) {
             throw new ServiceException("Failed to save data item to database.");
@@ -222,15 +246,33 @@ public class DataService {
         // } else {
         //     throw new ServiceException("Unsupported data type for access: " + dataItem.getType());
         // }
-        String accessedContent = "Accessed data (decryption placeholder): " + dataItem.getData();
+        String accessedContent;
         if ("file".equalsIgnoreCase(dataItem.getType())) {
-             accessedContent += " (AES key for decryption: " + consent.getReEncryptedAesKey() + " - this would be decrypted by seeker)";
+            // For file type, data stores the relative path
+            accessedContent = "File path: " + dataItem.getData() +
+                              " (AES key for decryption: " + consent.getReEncryptedAesKey() +
+                              " - this would be decrypted by seeker to get the actual AES key for the file)";
+        } else { // text or other types
+            accessedContent = "Accessed data (decryption placeholder): " + dataItem.getData();
         }
 
 
         // Increment access count
-        consentDAO.incrementAccessCount(consent.getConsentId());
-        // Log access in ConsentHistory (to be done by ConsentService or here)
+        boolean countIncremented = consentDAO.incrementAccessCount(consent.getConsentId());
+        if(countIncremented){
+            // Log access in ConsentHistory
+            consentHistoryDAO.logAction(new com.consentmanager.models.ConsentHistory(
+                consent.getConsentId(),
+                "accessed",
+                seekerId, // actorId is the seeker's credentialId
+                "seeker", // actorRole
+                "Data item accessed by seeker."
+            ));
+        } else {
+            logger.warn("Failed to increment access count for consent ID {}, but access was granted based on checks.", consent.getConsentId());
+            // Depending on policy, this might still be an error or just a warning
+        }
+
 
         return accessedContent;
     }
