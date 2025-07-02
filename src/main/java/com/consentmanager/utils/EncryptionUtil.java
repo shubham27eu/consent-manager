@@ -51,6 +51,31 @@ public class EncryptionUtil {
 
     // --- AES Methods ---
 
+    public static byte[] encryptAES(byte[] plainBytes, String keyString) {
+        try {
+            SecretKey secretKey = aesKeyFromString(keyString);
+            Cipher cipher = Cipher.getInstance(AES); // Consider AES/GCM/NoPadding for more security if IVs are managed
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            return cipher.doFinal(plainBytes);
+        } catch (Exception e) {
+            logger.error("AES Byte Encryption error: {}", e.getMessage(), e);
+            throw new RuntimeException("AES Byte Encryption error", e);
+        }
+    }
+
+    public static byte[] decryptAES(byte[] encryptedBytes, String keyString) {
+        try {
+            SecretKey secretKey = aesKeyFromString(keyString);
+            Cipher cipher = Cipher.getInstance(AES);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            return cipher.doFinal(encryptedBytes);
+        } catch (Exception e) {
+            logger.error("AES Byte Decryption error: {}", e.getMessage(), e);
+            throw new RuntimeException("AES Byte Decryption error", e);
+        }
+    }
+
+
     /**
      * Generates a new AES key.
      * @return Base64 encoded string of the AES key.

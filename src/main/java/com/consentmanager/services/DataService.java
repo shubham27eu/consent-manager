@@ -99,24 +99,23 @@ public class DataService {
                 }
 
                 // Encrypt the file content before saving
-                // For simplicity, encrypting bytes as if it were a string. Real file encryption might need streaming.
-                // This is a placeholder for actual byte[] encryption.
-                // Consider if encryptAES should take byte[] and return byte[]
-                String encryptedFileContentBase64 = EncryptionUtil.encryptAES(Base64.getEncoder().encodeToString(rawFileBytes), actualAesKey);
-                Files.write(filePath, Base64.getDecoder().decode(encryptedFileContentBase64), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                // Encrypt the file content directly using byte[] AES encryption
+                byte[] encryptedFileBytes = EncryptionUtil.encryptAES(rawFileBytes, actualAesKey);
+                Files.write(filePath, encryptedFileBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
                 finalDataToStore = providerDir.relativize(filePath).toString(); // Store relative path
                 logger.info("Encrypted file data item {} stored at: {}", name, filePath.toString());
 
             } else if ("text".equalsIgnoreCase(type)) {
+                // Encrypt text data
                 finalDataToStore = EncryptionUtil.encryptAES(dataContentOrPath, actualAesKey);
                 logger.info("Encrypted text data for item: {}", name);
             }
-            // Encrypt the AES key with the system/provider's public RSA key
+            // Encrypt the AES key (used for both text and file) with the system/provider's public RSA key
             aesKeyEncryptedWithProviderKey = EncryptionUtil.encryptRSA(actualAesKey, EncryptionUtil.SYSTEM_RSA_PUBLIC_KEY_STRING);
 
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("AES algorithm not found during key generation for {}: {}", name, e.getMessage(), e);
+        } catch (NoSuchAlgorithmException e) { // From generateAesKeyString
+            logger.error("Encryption algorithm not found during key generation for {}: {}", name, e.getMessage(), e);
             throw new ServiceException("Failed to generate encryption key.", e);
         } catch (IOException e) {
             logger.error("Error saving encrypted file for data item {}: {}", name, e.getMessage(), e);
