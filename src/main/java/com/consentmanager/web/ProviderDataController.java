@@ -48,12 +48,27 @@ public class ProviderDataController {
     private DataItem createDataItem(Request req, Response res) {
         res.type("application/json");
         try {
-            Integer providerId = req.attribute("credentialId"); // Set by AuthMiddleware
+            Integer providerId = req.attribute("credentialId");
             if (providerId == null) {
-                throw new ServiceException("Provider ID not found in request attributes. Ensure authentication middleware is active.");
+                // This should ideally be caught by AuthMiddleware, but as a safeguard:
+                return haltWithError(res, 401, "Provider authentication required.");
             }
 
             DataItemRequest dataItemRequest = objectMapper.readValue(req.body(), DataItemRequest.class);
+
+            // Validation
+            if (isNullOrEmpty(dataItemRequest.getName())) {
+                return haltWithError(res, 400, "Data item name is required.");
+            }
+            if (isNullOrEmpty(dataItemRequest.getType()) ||
+                (!dataItemRequest.getType().equalsIgnoreCase("text") && !dataItemRequest.getType().equalsIgnoreCase("file"))) {
+                return haltWithError(res, 400, "Data item type must be 'text' or 'file'.");
+            }
+            if (isNullOrEmpty(dataItemRequest.getData())) {
+                return haltWithError(res, 400, "Data content/path is required.");
+            }
+            // Description is optional
+
             DataItem createdItem = dataService.createDataItem(
                     providerId,
                     dataItemRequest.getName(),
@@ -97,10 +112,26 @@ public class ProviderDataController {
         res.type("application/json");
         try {
             Integer providerId = req.attribute("credentialId");
-            if (providerId == null) throw new ServiceException("Provider ID missing.");
-            int dataItemId = Integer.parseInt(req.params(":id"));
+            if (providerId == null) return haltWithError(res, 401, "Provider authentication required.");
+
+            int dataItemId;
+            try {
+                dataItemId = Integer.parseInt(req.params(":id"));
+                if (dataItemId <= 0) throw new NumberFormatException("ID must be positive");
+            } catch (NumberFormatException e) {
+                return haltWithError(res, 400, "Invalid Data Item ID format in path.");
+            }
 
             DataItemRequest dataItemUpdateRequest = objectMapper.readValue(req.body(), DataItemRequest.class);
+
+            // Validation for update: if type is provided, it must be valid
+            if (dataItemUpdateRequest.getType() != null &&
+                !dataItemUpdateRequest.getType().trim().isEmpty() &&
+                (!dataItemUpdateRequest.getType().equalsIgnoreCase("text") && !dataItemUpdateRequest.getType().equalsIgnoreCase("file"))) {
+                return haltWithError(res, 400, "If provided, data item type must be 'text' or 'file'.");
+            }
+            // Other fields are optional for update, so empty/null checks are more about if they *exist* to be updated.
+            // Service layer will handle logic of what an "empty" update means.
 
             boolean updated = dataService.updateDataItem(
                 dataItemId,
@@ -139,8 +170,15 @@ public class ProviderDataController {
         res.type("application/json");
         try {
             Integer providerId = req.attribute("credentialId");
-            if (providerId == null) throw new ServiceException("Provider ID missing.");
-            int dataItemId = Integer.parseInt(req.params(":id"));
+            if (providerId == null) return haltWithError(res, 401, "Provider authentication required.");
+
+            int dataItemId;
+            try {
+                dataItemId = Integer.parseInt(req.params(":id"));
+                 if (dataItemId <= 0) throw new NumberFormatException("ID must be positive");
+            } catch (NumberFormatException e) {
+                return haltWithError(res, 400, "Invalid Data Item ID format in path.");
+            }
 
             boolean deleted = dataService.deleteDataItem(dataItemId, providerId);
             if (deleted) {
@@ -169,13 +207,21 @@ public class ProviderDataController {
         res.type("application/json");
         try {
             Integer providerId = req.attribute("credentialId");
-            if (providerId == null) throw new ServiceException("Provider ID missing.");
-            // Default to "pending" status if not specified
-            String status = req.queryParams("status") != null ? req.queryParams("status") : "pending";
+            if (providerId == null) return haltWithError(res, 401, "Provider authentication required.");
+
+            String status = req.queryParams("status");
+            if (status == null || status.trim().isEmpty()) {
+                status = "pending"; // Default status
+            } else {
+                status = status.toLowerCase();
+                if (!List.of("pending", "approved", "rejected", "revoked", "expired", "exhausted").contains(status)) {
+                    return haltWithError(res, 400, "Invalid status query parameter.");
+                }
+            }
             return consentService.getConsentsByProviderAndStatus(providerId, status);
         } catch (ServiceException e) {
             logger.warn("ServiceException in getPendingConsentRequests: {}", e.getMessage());
-            res.status(400);
+            res.status(400); // Or map specific ServiceException types to other codes
             return List.of(new ErrorResponse(e.getMessage()).toConsent());
         } catch (Exception e) {
             logger.error("Error fetching consent requests: {}", e.getMessage(), e);
@@ -188,15 +234,22 @@ public class ProviderDataController {
         res.type("application/json");
         try {
             Integer providerId = req.attribute("credentialId");
-            if (providerId == null) throw new ServiceException("Provider ID missing.");
-            int consentId = Integer.parseInt(req.params(":consentId"));
+            if (providerId == null) return haltWithError(res, 401, "Provider authentication required.");
+
+            int consentId;
+            try {
+                consentId = Integer.parseInt(req.params(":consentId"));
+                if (consentId <= 0) throw new NumberFormatException("ID must be positive");
+            } catch (NumberFormatException e) {
+                return haltWithError(res, 400, "Invalid Consent ID format in path.");
+            }
 
             ConsentResponseRequest consentResponse = objectMapper.readValue(req.body(), ConsentResponseRequest.class);
-            if (consentResponse.getStatus() == null ||
+            if (isNullOrEmpty(consentResponse.getStatus()) ||
                (!consentResponse.getStatus().equalsIgnoreCase("approved") && !consentResponse.getStatus().equalsIgnoreCase("rejected"))) {
-                res.status(400);
-                return new ErrorResponse("Invalid status. Must be 'approved' or 'rejected'.");
+                return haltWithError(res, 400, "Status must be 'approved' or 'rejected'.");
             }
+            // Details can be null/empty, especially for approval.
 
             boolean success = consentService.respondToConsent(
                     providerId,
@@ -271,13 +324,31 @@ public class ProviderDataController {
         public ErrorResponse(String error) { this.error = error; }
         public String getError() { return error; }
         // Trick to satisfy Spark's return type for lists/objects in error cases
-        public DataItem toDataItem() { DataItem d = new DataItem(); d.setName(error); return d; }
-        public Consent toConsent() { Consent c = new Consent(); c.setStatus(error); return c;}
+        public DataItem toDataItem() { DataItem d = new DataItem(); d.setName(error); return d; } // Used when handler returns List<DataItem>
+        public Consent toConsent() { Consent c = new Consent(); c.setStatus(error); return c;} // Used when handler returns List<Consent>
     }
 
     private static class SuccessResponse {
         private String message;
         public SuccessResponse(String message) { this.message = message; }
         public String getMessage() { return message; }
+    }
+
+    // Helper for null or empty string check
+    private boolean isNullOrEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
+    // Helper to standardize error responses and halt
+    private Object haltWithError(Response res, int statusCode, String message) {
+        logger.warn("Validation/Request error in ProviderDataController: {} - {}", statusCode, message);
+        res.status(statusCode);
+        try {
+            Spark.halt(statusCode, objectMapper.writeValueAsString(new ErrorResponse(message)));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            logger.error("Error serializing error message for halt", e);
+            Spark.halt(500, "{\"error\":\"Internal Server Error and failed to serialize error message.\"}");
+        }
+        return null; // Unreachable
     }
 }

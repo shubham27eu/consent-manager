@@ -48,8 +48,8 @@ public class AdminController {
     }
 
     private void setupRoutes() {
-        // Admin Authentication Filter for all /admin/* routes
-        before("/admin/*", this::authenticateAdmin);
+        // The authentication for /admin/* is now handled by AuthMiddleware in App.java
+        // So, remove: before("/admin/*", this::authenticateAdmin);
 
         get("/admin/provider-backlog", this::getProviderBacklog, objectMapper::writeValueAsString);
         get("/admin/seeker-backlog", this::getSeekerBacklog, objectMapper::writeValueAsString);
@@ -70,50 +70,7 @@ public class AdminController {
         get("/admin/seekers", this::getActiveSeekers, objectMapper::writeValueAsString);
     }
 
-    private void authenticateAdmin(Request req, Response res) {
-        String tokenHeader = req.headers("Authorization");
-        if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
-            logger.warn("Admin route access attempt without token or invalid format.");
-            try {
-                halt(401, objectMapper.writeValueAsString(Collections.singletonMap("error", "Unauthorized - Token required.")));
-            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                logger.error("Error serializing error message", e);
-                halt(500, "{\"error\":\"Internal Server Error\"}");
-            }
-        }
-
-        String token = tokenHeader.substring(7); // Remove "Bearer "
-        Optional<DecodedJWT> decodedOpt = JwtUtil.verifyToken(token);
-
-        if (decodedOpt.isEmpty()) {
-            logger.warn("Admin route access attempt with invalid token.");
-            try {
-                halt(401, objectMapper.writeValueAsString(Collections.singletonMap("error", "Unauthorized - Invalid token.")));
-            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                logger.error("Error serializing error message", e);
-                halt(500, "{\"error\":\"Internal Server Error\"}");
-            }
-        }
-
-        DecodedJWT decodedJWT = decodedOpt.get();
-        String role = JwtUtil.getRole(decodedJWT);
-        Integer credentialId = JwtUtil.getCredentialId(decodedJWT);
-
-
-        if (!"admin".equalsIgnoreCase(role)) {
-            logger.warn("Non-admin user (ID: {}, Role: {}) attempted to access admin route: {}", credentialId, role, req.pathInfo());
-            try {
-                halt(403, objectMapper.writeValueAsString(Collections.singletonMap("error", "Forbidden - Admin access required.")));
-            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                logger.error("Error serializing error message", e);
-                halt(500, "{\"error\":\"Internal Server Error\"}");
-            }
-        }
-
-        // Optionally, store admin credentialId in request attributes if needed by handlers
-        req.attribute("adminCredentialId", credentialId);
-        logger.debug("Admin access granted for user ID: {} to route: {}", credentialId, req.pathInfo());
-    }
+    // The authenticateAdmin method is removed as middleware is handled in App.java
 
     private Object getProviderBacklog(Request req, Response res) {
         res.type("application/json");
@@ -141,9 +98,17 @@ public class AdminController {
         res.type("application/json");
         try {
             ApprovalRequest approvalReq = objectMapper.readValue(req.body(), ApprovalRequest.class);
+            // Validation
+            if (approvalReq.id <= 0) {
+                return haltWithError(res, 400, "Valid backlog ID is required.");
+            }
+            if (approvalReq.action == null || (!approvalReq.action.equalsIgnoreCase("approve") && !approvalReq.action.equalsIgnoreCase("reject"))) {
+                return haltWithError(res, 400, "Action must be 'approve' or 'reject'.");
+            }
+
             boolean success = adminService.processProviderApproval(approvalReq.id, "approve".equalsIgnoreCase(approvalReq.action));
             if (success) {
-                return Collections.singletonMap("message", "Provider " + approvalReq.action + "d successfully.");
+                return Collections.singletonMap("message", "Provider " + approvalReq.action + (approvalReq.action.endsWith("e") ? "d" : "ed") + " successfully.");
             } else {
                 res.status(400);
                 return Collections.singletonMap("error", "Failed to process provider approval.");
@@ -159,9 +124,17 @@ public class AdminController {
         res.type("application/json");
         try {
             ApprovalRequest approvalReq = objectMapper.readValue(req.body(), ApprovalRequest.class);
+             // Validation
+            if (approvalReq.id <= 0) {
+                return haltWithError(res, 400, "Valid backlog ID is required.");
+            }
+            if (approvalReq.action == null || (!approvalReq.action.equalsIgnoreCase("approve") && !approvalReq.action.equalsIgnoreCase("reject"))) {
+                return haltWithError(res, 400, "Action must be 'approve' or 'reject'.");
+            }
+
             boolean success = adminService.processSeekerApproval(approvalReq.id, "approve".equalsIgnoreCase(approvalReq.action));
             if (success) {
-                return Collections.singletonMap("message", "Seeker " + approvalReq.action + "d successfully.");
+                return Collections.singletonMap("message", "Seeker " + approvalReq.action + (approvalReq.action.endsWith("e") ? "d" : "ed") + " successfully.");
             } else {
                 res.status(400);
                 return Collections.singletonMap("error", "Failed to process seeker approval.");
@@ -177,6 +150,11 @@ public class AdminController {
         res.type("application/json");
         try {
             UserStatusRequest statusRequest = objectMapper.readValue(req.body(), UserStatusRequest.class);
+            // Validation
+            if (statusRequest.userId <= 0) {
+                return haltWithError(res, 400, "Valid userId is required.");
+            }
+
             boolean success = adminService.setProviderActiveStatus(statusRequest.userId, false);
             if (success) {
                 return Collections.singletonMap("message", "Provider inactivated successfully.");
@@ -195,6 +173,11 @@ public class AdminController {
         res.type("application/json");
         try {
             UserStatusRequest statusRequest = objectMapper.readValue(req.body(), UserStatusRequest.class);
+            // Validation
+             if (statusRequest.userId <= 0) {
+                return haltWithError(res, 400, "Valid userId is required.");
+            }
+
             boolean success = adminService.setSeekerActiveStatus(statusRequest.userId, false);
             if (success) {
                 return Collections.singletonMap("message", "Seeker inactivated successfully.");
@@ -213,15 +196,21 @@ public class AdminController {
         res.type("application/json");
         try {
             ReactivateRequest reactivateReq = objectMapper.readValue(req.body(), ReactivateRequest.class);
+            // Validation
+            if (reactivateReq.userId <= 0) {
+                 return haltWithError(res, 400, "Valid userId is required.");
+            }
+            if (reactivateReq.role == null || (!reactivateReq.role.equalsIgnoreCase("provider") && !reactivateReq.role.equalsIgnoreCase("seeker"))) {
+                return haltWithError(res, 400, "Role must be 'provider' or 'seeker'.");
+            }
+
             boolean success = false;
             if ("provider".equalsIgnoreCase(reactivateReq.role)) {
                 success = adminService.setProviderActiveStatus(reactivateReq.userId, true);
-            } else if ("seeker".equalsIgnoreCase(reactivateReq.role)) {
+            } else if ("seeker".equalsIgnoreCase(reactivateReq.role)) { // This condition is now guaranteed by validation
                 success = adminService.setSeekerActiveStatus(reactivateReq.userId, true);
-            } else {
-                res.status(400);
-                return Collections.singletonMap("error", "Invalid role for reactivation.");
             }
+            // No 'else' needed due to prior validation ensuring role is one of the two
 
             if (success) {
                 return Collections.singletonMap("message", reactivateReq.role + " reactivated successfully.");
@@ -270,7 +259,15 @@ public class AdminController {
         return null;
     }
 
-    // Helper to handle JsonProcessingException in halt
+    // Helper to handle JsonProcessingException in halt and standardize error response
+    private String haltWithError(Response res, int statusCode, String message) throws com.fasterxml.jackson.core.JsonProcessingException {
+        logger.warn("Validation/Request error in AdminController: {} - {}", statusCode, message);
+        res.status(statusCode);
+        halt(statusCode, objectMapper.writeValueAsString(Collections.singletonMap("error", message)));
+        return null; // Unreachable
+    }
+
+    // Helper to handle JsonProcessingException in halt for general exceptions
     private void handleJsonException(Exception e, String defaultMessage) {
         try {
             halt(500, objectMapper.writeValueAsString(Collections.singletonMap("error", defaultMessage)));

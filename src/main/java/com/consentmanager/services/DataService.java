@@ -29,6 +29,27 @@ public class DataService {
     private ConsentDAO consentDAO;
     private ConsentHistoryDAO consentHistoryDAO; // For logging access
 
+    // DTO for returning structured data access details
+    public static class DataAccessDetails {
+        private String dataType; // "text" or "file"
+        private String data; // Encrypted text data, or file path
+        private String reEncryptedAesKey; // AES key for data (itself encrypted with seeker's public key)
+        private String originalFileName; // Only for file type
+
+        public DataAccessDetails(String dataType, String data, String reEncryptedAesKey, String originalFileName) {
+            this.dataType = dataType;
+            this.data = data;
+            this.reEncryptedAesKey = reEncryptedAesKey;
+            this.originalFileName = originalFileName;
+        }
+
+        public String getDataType() { return dataType; }
+        public String getData() { return data; }
+        public String getReEncryptedAesKey() { return reEncryptedAesKey; }
+        public String getOriginalFileName() { return originalFileName; }
+    }
+
+
     // Constructor for dependency injection (testing and real use)
     public DataService(DataItemDAO dataItemDAO, ConsentDAO consentDAO, ConsentHistoryDAO consentHistoryDAO) {
         this.dataItemDAO = dataItemDAO;
@@ -193,10 +214,10 @@ public class DataService {
 
     /**
      * Allows a seeker to access a data item they have approved consent for.
-     * This is a simplified version. Real decryption would involve seeker's private key.
-     * @return The decrypted data content (for text) or info for file access.
+     * Returns necessary details for the seeker to decrypt/access the data.
+     * @return DataAccessDetails object containing data (encrypted for text, path for file) and re-encrypted AES key.
      */
-    public String accessDataItem(Integer seekerId, Integer dataItemId) throws ServiceException {
+    public DataAccessDetails accessDataItem(Integer seekerId, Integer dataItemId) throws ServiceException {
         if (seekerId == null || dataItemId == null) {
             throw new ServiceException("Seeker ID and Data Item ID are required.");
         }
@@ -212,13 +233,14 @@ public class DataService {
         }
 
         if (consent.getExpiresAt() != null && LocalDateTime.now().isAfter(consent.getExpiresAt())) {
-            // Optionally update status to "expired"
+            // TODO: Optionally update status to "expired" by the system (e.g., a background job or on next access attempt)
+            // For now, just block access.
             // consentDAO.updateConsentStatus(consent.getConsentId(), "expired", consent.getApprovedAt(), consent.getExpiresAt(), consent.getReEncryptedAesKey());
             throw new ServiceException("Consent has expired for data item " + dataItemId);
         }
 
-        if (consent.getMaxAccessCount() != null && consent.getAccessCount() >= consent.getMaxAccessCount()) {
-            // Optionally update status to "exhausted"
+        if (consent.getMaxAccessCount() != null && consent.getAccessCount() != null && consent.getAccessCount() >= consent.getMaxAccessCount()) {
+            // TODO: Optionally update status to "exhausted"
              // consentDAO.updateConsentStatus(consent.getConsentId(), "exhausted", consent.getApprovedAt(), consent.getExpiresAt(), consent.getReEncryptedAesKey());
             throw new ServiceException("Access count exhausted for data item " + dataItemId);
         }
@@ -229,33 +251,17 @@ public class DataService {
         }
         DataItem dataItem = dataItemOpt.get();
 
-        // --- Placeholder for decryption ---
-        // String decryptedData;
-        // String reEncryptedItemAesKey = consent.getReEncryptedAesKey(); // Key for DataItem's AES key, encrypted with Seeker's public key
-        // String itemAesKey; // This would be decrypted by Seeker using their private key from reEncryptedItemAesKey
+        // Data to be returned to seeker:
+        // - For "text": the encrypted text data itself.
+        // - For "file": the relative path to the encrypted file.
+        // - In both cases: the reEncryptedAesKey from the Consent record.
 
-        // Assume seeker has decrypted reEncryptedItemAesKey to get itemAesKey
-        // String itemAesKey = EncryptionUtil.decryptRSA(reEncryptedItemAesKey, seekerPrivateKeyString);
-        // String dataItemEncryptedAesKey = dataItem.getAesKeyEncrypted(); // This is the AES key of the data, encrypted with provider's key
-        // String actualDataAesKey = EncryptionUtil.decryptRSA(dataItemEncryptedAesKey, providerSystemPrivateKey); // or however this is managed
-
-        // if ("text".equalsIgnoreCase(dataItem.getType())) {
-        //     decryptedData = EncryptionUtil.decryptAES(dataItem.getData(), actualDataAesKey);
-        // } else if ("file".equalsIgnoreCase(dataItem.getType())) {
-        //     decryptedData = "File: " + dataItem.getData() + " (Access with key: " + actualDataAesKey + ")";
-        // } else {
-        //     throw new ServiceException("Unsupported data type for access: " + dataItem.getType());
-        // }
-        String accessedContent;
-        if ("file".equalsIgnoreCase(dataItem.getType())) {
-            // For file type, data stores the relative path
-            accessedContent = "File path: " + dataItem.getData() +
-                              " (AES key for decryption: " + consent.getReEncryptedAesKey() +
-                              " - this would be decrypted by seeker to get the actual AES key for the file)";
-        } else { // text or other types
-            accessedContent = "Accessed data (decryption placeholder): " + dataItem.getData();
+        String dataToReturn = dataItem.getData(); // This is encrypted text or file path
+        String originalFileName = null;
+        if("file".equalsIgnoreCase(dataItem.getType())){
+            // For files, the 'name' field of DataItem can be considered the original/display name.
+            originalFileName = dataItem.getName();
         }
-
 
         // Increment access count
         boolean countIncremented = consentDAO.incrementAccessCount(consent.getConsentId());
@@ -274,7 +280,7 @@ public class DataService {
         }
 
 
-        return accessedContent;
+        return new DataAccessDetails(dataItem.getType(), dataToReturn, consent.getReEncryptedAesKey(), originalFileName);
     }
 
     /**

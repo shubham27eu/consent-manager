@@ -11,6 +11,7 @@ import spark.Response;
 
 import static spark.Spark.halt;
 import static spark.Spark.post;
+import java.util.regex.Pattern;
 
 public class AuthController {
 
@@ -60,58 +61,46 @@ public class AuthController {
             String role = objectMapper.readTree(requestBody).get("role").asText();
 
             if (role == null || role.trim().isEmpty()) {
-                logger.warn("Role not provided in signup request.");
-                halt(400, objectMapper.writeValueAsString(new AuthService.SignupResponse<>(null, "Role is required for signup.", false)));
+                return haltWithError(res, 400, "Role is required for signup.");
             }
+            role = role.toLowerCase();
 
             AuthService.SignupResponse<?> signupResponse;
 
-            switch (role.toLowerCase()) {
+            switch (role) {
                 case "provider":
                     ProviderBacklog providerData = objectMapper.readValue(requestBody, ProviderBacklog.class);
+                    validateProviderBacklog(providerData, res); // Throws HaltException on failure
                     signupResponse = authService.signupProvider(providerData);
                     break;
                 case "seeker":
                     SeekerBacklog seekerData = objectMapper.readValue(requestBody, SeekerBacklog.class);
+                    validateSeekerBacklog(seekerData, res); // Throws HaltException on failure
                     signupResponse = authService.signupSeeker(seekerData);
                     break;
                 case "admin":
-                    // For admin, we expect a nested structure or a specific DTO
                     AdminSignupRequest adminSignupReq = objectMapper.readValue(requestBody, AdminSignupRequest.class);
-                     if (adminSignupReq.adminDetails == null) {
-                        logger.warn("adminDetails missing in admin signup request.");
-                        halt(400, objectMapper.writeValueAsString(new AuthService.SignupResponse<>(null, "adminDetails are required for admin signup.", false)));
-                    }
+                    validateAdminSignupRequest(adminSignupReq, res); // Throws HaltException on failure
                     signupResponse = authService.signupAdmin(adminSignupReq.adminDetails, adminSignupReq.username, adminSignupReq.password);
                     break;
                 default:
-                    logger.warn("Invalid role specified: {}", role);
-                    halt(400, objectMapper.writeValueAsString(new AuthService.SignupResponse<>(null, "Invalid role specified.", false)));
-                    return null; // Unreachable due to halt
+                    return haltWithError(res, 400, "Invalid role specified.");
             }
 
             if (signupResponse.success) {
                 res.status(201); // Created
             } else {
-                // Determine appropriate status code based on message if needed, e.g., 409 for conflict
-                if (signupResponse.message.contains("already exists")) {
-                    res.status(409); // Conflict
-                } else {
-                    res.status(400); // Bad Request
-                }
+                res.status(signupResponse.message.contains("already exists") ? 409 : 400);
             }
             return signupResponse;
 
-        } catch (Exception e) {
-            logger.error("Error processing signup request", e);
-            try {
-                halt(500, objectMapper.writeValueAsString(new AuthService.SignupResponse<>(null, "Internal server error during signup.", false)));
-            } catch (Exception ex) {
-                logger.error("Error serializing error response for signup", ex);
-                halt(500, "{\"success\":false, \"message\":\"Internal server error and failed to serialize error.\"}");
-            }
+        } catch (spark.Spark.HaltException he) {
+            throw he; // Re-throw halt exceptions to let Spark handle them
         }
-        return null; // Unreachable
+        catch (Exception e) {
+            logger.error("Error processing signup request", e);
+            return haltWithError(res, 500, "Internal server error during signup.");
+        }
     }
 
     private Object handleLogin(Request req, Response res) {
@@ -121,9 +110,20 @@ public class AuthController {
 
         try {
             LoginRequest loginRequest = objectMapper.readValue(requestBody, LoginRequest.class);
-            if (loginRequest.username == null || loginRequest.password == null || loginRequest.role == null) {
-                 logger.warn("Login request missing username, password, or role.");
-                halt(400, objectMapper.writeValueAsString(new AuthService.LoginResponse(null, null, null, "Username, password, and role are required.", false, null)));
+
+            // Basic validation for login
+            if (loginRequest.username == null || loginRequest.username.trim().isEmpty()) {
+                return haltWithError(res, 400, "Username is required.");
+            }
+            if (loginRequest.password == null || loginRequest.password.isEmpty()) {
+                return haltWithError(res, 400, "Password is required.");
+            }
+            if (loginRequest.role == null || loginRequest.role.trim().isEmpty()) {
+                return haltWithError(res, 400, "Role is required.");
+            }
+            String role = loginRequest.role.toLowerCase();
+            if (!List.of("provider", "seeker", "admin").contains(role)) {
+                return haltWithError(res, 400, "Invalid role specified.");
             }
 
             AuthService.LoginResponse loginResponse = authService.login(
@@ -149,13 +149,67 @@ public class AuthController {
 
         } catch (Exception e) {
             logger.error("Error processing login request", e);
-             try {
-                halt(500, objectMapper.writeValueAsString(new AuthService.LoginResponse(null, null, null, "Internal server error during login.", false, null)));
-            } catch (Exception ex) {
-                logger.error("Error serializing error response for login", ex);
-                halt(500, "{\"success\":false, \"message\":\"Internal server error and failed to serialize error.\"}");
-            }
+            return haltWithError(res, 500, "Internal server error during login.");
         }
-        return null; // Unreachable
+    }
+
+    // --- Validation Helper Methods ---
+    private void validateProviderBacklog(ProviderBacklog data, Response res) throws com.fasterxml.jackson.core.JsonProcessingException {
+        if (isNullOrEmpty(data.getUsername()) || data.getUsername().length() < 3) haltWithError(res, 400, "Username must be at least 3 characters.");
+        if (isNullOrEmpty(data.getPassword()) || data.getPassword().length() < 6) haltWithError(res, 400, "Password must be at least 6 characters.");
+        if (isNullOrEmpty(data.getEmail()) || !isValidEmail(data.getEmail())) haltWithError(res, 400, "Valid email is required.");
+        if (isNullOrEmpty(data.getFirstName())) haltWithError(res, 400, "First name is required.");
+        if (isNullOrEmpty(data.getLastName())) haltWithError(res, 400, "Last name is required.");
+        if (isNullOrEmpty(data.getMobileNo())) haltWithError(res, 400, "Mobile number is required.");
+        if (data.getDateOfBirth() == null) haltWithError(res, 400, "Date of birth is required.");
+        if (data.getAge() == null || data.getAge() <= 0) haltWithError(res, 400, "Valid age is required.");
+        if (isNullOrEmpty(data.getGender())) haltWithError(res, 400, "Gender is required.");
+        if (isNullOrEmpty(data.getPublicKey())) haltWithError(res, 400, "Public key is required.");
+    }
+
+    private void validateSeekerBacklog(SeekerBacklog data, Response res) throws com.fasterxml.jackson.core.JsonProcessingException {
+        if (isNullOrEmpty(data.getUsername()) || data.getUsername().length() < 3) haltWithError(res, 400, "Username must be at least 3 characters.");
+        if (isNullOrEmpty(data.getPassword()) || data.getPassword().length() < 6) haltWithError(res, 400, "Password must be at least 6 characters.");
+        if (isNullOrEmpty(data.getEmail()) || !isValidEmail(data.getEmail())) haltWithError(res, 400, "Valid email is required.");
+        if (isNullOrEmpty(data.getName())) haltWithError(res, 400, "Name is required.");
+        if (isNullOrEmpty(data.getType())) haltWithError(res, 400, "Type is required.");
+        if (isNullOrEmpty(data.getRegistrationNo())) haltWithError(res, 400, "Registration number is required.");
+        if (isNullOrEmpty(data.getContactNo())) haltWithError(res, 400, "Contact number is required.");
+        if (isNullOrEmpty(data.getAddress())) haltWithError(res, 400, "Address is required.");
+        if (isNullOrEmpty(data.getPublicKey())) haltWithError(res, 400, "Public key is required.");
+    }
+
+    private void validateAdminSignupRequest(AdminSignupRequest data, Response res) throws com.fasterxml.jackson.core.JsonProcessingException {
+        if (data.adminDetails == null) haltWithError(res, 400, "adminDetails are required.");
+        if (isNullOrEmpty(data.username) || data.username.length() < 3) haltWithError(res, 400, "Username must be at least 3 characters.");
+        if (isNullOrEmpty(data.password) || data.password.length() < 6) haltWithError(res, 400, "Password must be at least 6 characters.");
+        if (isNullOrEmpty(data.adminDetails.getEmail()) || !isValidEmail(data.adminDetails.getEmail())) haltWithError(res, 400, "Valid email is required for admin.");
+        if (isNullOrEmpty(data.adminDetails.getFirstName())) haltWithError(res, 400, "First name is required for admin.");
+        if (isNullOrEmpty(data.adminDetails.getLastName())) haltWithError(res, 400, "Last name is required for admin.");
+    }
+
+    private boolean isNullOrEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
+    private boolean isValidEmail(String email) {
+        if (email == null) return false;
+        return EMAIL_PATTERN.matcher(email).matches();
+    }
+
+    // Helper to standardize error responses and halt
+    private String haltWithError(Response res, int statusCode, String message) {
+        logger.warn("Validation/Request error in AuthController: {} - {}", statusCode, message);
+        res.status(statusCode);
+        res.type("application/json"); // Ensure content type for error
+        try {
+            halt(statusCode, objectMapper.writeValueAsString(java.util.Collections.singletonMap("error", message)));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            logger.error("Error serializing error message for halt", e);
+            // Fallback halt if JSON serialization itself fails
+            halt(500, "{\"error\":\"Internal Server Error and failed to serialize error message.\"}");
+        }
+        return null; // Unreachable due to halt
     }
 }
