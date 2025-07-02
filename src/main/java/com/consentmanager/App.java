@@ -31,22 +31,48 @@ public class App {
         com.consentmanager.daos.SeekerDAO seekerDAO = new com.consentmanager.daos.SeekerDAO();
         com.consentmanager.daos.ProviderBacklogDAO providerBacklogDAO = new com.consentmanager.daos.ProviderBacklogDAO();
         com.consentmanager.daos.SeekerBacklogDAO seekerBacklogDAO = new com.consentmanager.daos.SeekerBacklogDAO();
+        com.consentmanager.daos.DataItemDAO dataItemDAO = new com.consentmanager.daos.DataItemDAO();
+        com.consentmanager.daos.ConsentDAO consentDAO = new com.consentmanager.daos.ConsentDAO();
+        com.consentmanager.daos.ConsentHistoryDAO consentHistoryDAO = new com.consentmanager.daos.ConsentHistoryDAO();
+
 
         // Initialize Services
         com.consentmanager.services.AuthService authService = new com.consentmanager.services.AuthService(
                 credentialDAO, adminDAO, providerDAO, seekerDAO, providerBacklogDAO, seekerBacklogDAO
         );
-
-        // Initialize Controllers
-        new com.consentmanager.controllers.AuthController(authService);
-        // Assuming AdminService will be initialized similarly, for now, a placeholder if not fully ready:
-        // com.consentmanager.services.AdminService adminService = new com.consentmanager.services.AdminService(...DAOs...);
-        // new com.consentmanager.controllers.AdminController(adminService);
-        // For now, let's assume AdminService is ready and DAOs are available
-        com.consentmanager.services.AdminService adminService = new com.consentmanager.services.AdminService(
-            providerBacklogDAO, seekerBacklogDAO, credentialDAO, providerDAO, seekerDAO
+         com.consentmanager.services.AdminService adminService = new com.consentmanager.services.AdminService(
+            providerBacklogDAO, seekerBacklogDAO, credentialDAO, providerDAO, seekerDAO, consentDAO, dataItemDAO // Added consentDAO, dataItemDAO
         );
-        new com.consentmanager.controllers.AdminController(adminService);
+        com.consentmanager.services.DataService dataService = new com.consentmanager.services.DataService(dataItemDAO, consentDAO);
+        com.consentmanager.services.ConsentService consentService = new com.consentmanager.services.ConsentService(consentDAO, dataItemDAO, consentHistoryDAO, seekerDAO);
+
+
+        // Initialize Controllers & Routes
+        // Public routes / Auth routes
+        path("/api/auth", () -> {
+            new com.consentmanager.controllers.AuthController(authService);
+        });
+
+        // Admin routes
+        path("/api/admin", () -> {
+            before("/*", com.consentmanager.web.middleware.AuthMiddleware.requireAuth);
+            before("/*", com.consentmanager.web.middleware.AuthMiddleware.requireAdmin);
+            new com.consentmanager.controllers.AdminController(adminService);
+        });
+
+        // Provider routes
+        path("/api/provider", () -> {
+            before("/*", com.consentmanager.web.middleware.AuthMiddleware.requireAuth);
+            before("/*", com.consentmanager.web.middleware.AuthMiddleware.requireProvider);
+            new com.consentmanager.web.ProviderDataController(dataService, consentService).registerRoutes();
+        });
+
+        // Seeker routes
+        path("/api/seeker", () -> {
+            before("/*", com.consentmanager.web.middleware.AuthMiddleware.requireAuth);
+            before("/*", com.consentmanager.web.middleware.AuthMiddleware.requireSeeker);
+            new com.consentmanager.web.SeekerDataController(dataService, consentService).registerRoutes();
+        });
 
 
         logger.info("Consent Manager Java backend started on port " + port());
